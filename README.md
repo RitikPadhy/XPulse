@@ -35,52 +35,11 @@ XPulse features a hybrid **16-Bit Cyberpunk / Synthwave** pixel-art interface bu
 
 ---
 
-# 🏗️ Architecture & Data Pipeline
+# ⚖️ The Fairness Engine
 
-XPulse avoids individual cloud-to-cloud hardware integrations by utilizing a centralized wearable middleware data pipeline.
+To allow a 20-year-old athlete and a 60-year-old casual walker to compete fairly in the same Dojo, XPulse translates raw absolute values into **relative baseline percentages** — your progress is measured against your *own* 30-day moving average, not someone else's peak.
 
-```text
-[Apple Watch / Garmin / Whoop]
-            │
-            ▼
- (Native Bluetooth Sync)
-            │
-            ▼
-[Apple HealthKit / Android Health Connect]
-            │
-            ▼
-   (XPulse Mobile App SDK)
-            │
-            ▼
-[Unified Wearable API / Middleware]
-            │
-            ▼
-   (Secure HTTPS Post Payload)
-            │
-            ▼
-[XPulse Backend Ingestion Server]
-            │
-            ▼
-[Baseline Normalization Engine]
-            │
-            ▼
-[Dojo Leaderboards & Quest Progression]
-```
-
-## ⚖️ Data Normalization (The Fairness Engine)
-
-To allow a 20-year-old athlete and a 60-year-old casual walker to compete fairly in the same Dojo, XPulse translates raw absolute values into **relative baseline percentages**:
-
-\[
-\text{Quest Progress (\%)} =
-\left(
-\frac{\text{Current Daily Value}}
-{\text{User's 30-Day Moving Average}}
-\right)
-\times 100
-\]
-
-Hitting **110%** of your *own* baseline triggers a **Critical Strike**, injecting bonus XP into the Dojo's weekly objective.
+Hitting **110%** of your own baseline triggers a **Critical Strike**, injecting bonus XP into the Dojo's weekly objective.
 
 ---
 
@@ -98,81 +57,6 @@ Trainers can:
 
 - **Program Boss Fights:**  
   Set massive, collective weekly calorie or movement walls that the Dojo must break down together before Sunday at midnight to unlock premium loot.
-
----
-
-# 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | Flutter / React Native (Expo) |
-| **State Management** | Riverpod / Redux |
-| **Wearable Pipeline** | HealthKit, Health Connect, Terra API, Rook |
-| **Backend** | Node.js / Python (FastAPI) |
-| **AI Infrastructure** | MCP (Model Context Protocol) |
-| **Database** | PostgreSQL + Redis |
-
----
-
-# 🚀 Getting Started (Development)
-
-## 1. Prerequisites
-
-- Xcode (for iOS / HealthKit simulation)
-- Android Studio (for Health Connect testing)
-- Node.js v20+
-
----
-
-## 2. Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/xpulse.git
-
-# Navigate into the project
-cd xpulse
-
-# Install mobile dependencies
-cd apps/mobile
-npm install
-
-# Start development server
-npm run dev
-```
-
----
-
-## 3. Environment Configuration
-
-Create a `.env` file in the root directory:
-
-```env
-MIDDLEWARE_API_KEY=your_wearable_api_key
-BACKEND_URL=https://api.xpulse.local
-ENCRYPTION_SECRET=your_phi_secure_key
-```
-
----
-
-# 🔒 Security & Privacy (PHI)
-
-Biometric data is highly sensitive **Personal Health Information (PHI)**. XPulse implements strict security protocols:
-
-- **OAuth 2.0 Explicit Consent**  
-  Users explicitly choose which metrics to share during onboarding.
-
-- **Immediate Anonymization**  
-  Raw biometric payloads are stripped of personal identifiers at the ingestion gateway and mapped to encrypted Participant IDs.
-
-- **At-Rest Encryption**  
-  All database entries tracking health metrics are encrypted using AES-256.
-
----
-
-# 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
