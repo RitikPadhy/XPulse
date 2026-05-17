@@ -1,0 +1,113 @@
+{
+  "user": {
+    "id": "u_001",
+    "displayName": "Ritik",
+    "age": 26,
+    "joinedAt": "2026-04-02",
+    "arena": "Neon Sprawl",
+    "trophies": 1240,
+    "avatar": "pixel_ronin_01"
+  },
+  "today": {
+    "date": "2026-05-17",
+    "metrics": {
+      "steps": 8421,
+      "sleepHours": 7.4,
+      "hrZone2Minutes": 18,
+      "hrv": 64,
+      "activeCalories": 412
+    },
+    "xp": {
+      "earned": 620,
+      "dailyGoal": 1000,
+      "criticalStrikes": 1
+    }
+  },
+  "baselines": {
+    "window": "30d",
+    "averages": {
+      "steps": 7800,
+      "sleepHours": 7.1,
+      "hrZone2Minutes": 22,
+      "hrv": 61,
+      "activeCalories": 395
+    }
+  },
+  "quests": [
+    {
+      "id": "q_sleep_8h",
+      "title": "Log 8h Sleep",
+      "metric": "sleepHours",
+      "target": 8.0,
+      "current": 7.4,
+      "xpReward": 200,
+      "status": "in_progress"
+    },
+    {
+      "id": "q_zone2",
+      "title": "Hit 20m in HR Zone 2",
+      "metric": "hrZone2Minutes",
+      "target": 20,
+      "current": 18,
+      "xpReward": 250,
+      "status": "in_progress"
+    },
+    {
+      "id": "q_steps_baseline",
+      "title": "Beat your step baseline",
+      "metric": "steps",
+      "target": 7800,
+      "current": 8421,
+      "xpReward": 150,
+      "status": "complete"
+    },
+    {
+      "id": "q_hrv_recover",
+      "title": "Stay above HRV baseline",
+      "metric": "hrv",
+      "target": 61,
+      "current": 64,
+      "xpReward": 120,
+      "status": "complete"
+    }
+  ],
+  "dojo": {
+    "id": "d_neon_wolves",
+    "name": "Neon Wolves",
+    "memberCount": 8,
+    "sensei": "Coach Aiko",
+    "weeklyBoss": {
+      "name": "The Iron Tide",
+      "objective": "Squad burns 25,000 active kcal",
+      "progress": 14820,
+      "target": 25000,
+      "endsAt": "2026-05-18T23:59:00+05:30"
+    },
+    "activeBuffs": [
+      {
+        "id": "buff_recovery_aura",
+        "name": "Recovery Aura",
+        "description": "Sleep XP x1.5, intensity rewards capped",
+        "expiresAt": "2026-05-18T06:00:00+05:30"
+      }
+    ]
+  },
+  "chests": [
+    {
+      "id": "chest_001",
+      "rarity": "common",
+      "status": "unlocking",
+      "unlocksAt": "2026-05-17T22:30:00+05:30"
+    },
+    {
+      "id": "chest_002",
+      "rarity": "rare",
+      "status": "pending"
+    },
+    {
+      "id": "chest_003",
+      "rarity": "epic",
+      "status": "pending"
+    }
+  ]
+}
