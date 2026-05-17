@@ -21,23 +21,21 @@ class HomeScreen extends StatelessWidget {
             onTap: () => _openProfile(context),
           ),
         ),
-        // Push the character toward the bottom so it reads as "standing at the
-        // foot of the towers" rather than floating in mid-air.
-        const Spacer(flex: 4),
-        c.avatar(
-          avatarKey: snap.user.avatar,
-          displayName: snap.user.displayName,
-          arena: snap.user.arena,
-        ),
-        const Spacer(),
         Padding(
-          padding: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.only(top: 4, bottom: 8),
           child: c.xpBar(
             earned: snap.today.xpEarned,
             goal: snap.today.xpDailyGoal,
             progress: snap.today.xpProgress,
           ),
         ),
+        const Spacer(flex: 4),
+        c.avatar(
+          avatarKey: snap.user.avatar,
+          displayName: snap.user.displayName,
+          arena: snap.user.arena,
+        ),
+        const Spacer(flex: 2),
       ],
     );
   }

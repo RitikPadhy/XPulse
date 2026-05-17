@@ -1,8 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 
 import '../../../core/models/user_snapshot.dart';
 import '../../contracts/component_library.dart';
@@ -308,122 +306,34 @@ class _Avatar extends StatelessWidget {
     required this.arena,
   });
 
-  static const _modelPath = 'assets/characters/avatar.glb';
-
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
     return Column(
       children: [
-        SizedBox(
-          width: 240,
-          height: 280,
-          // Brighten the character globally — WebView's default lighting is
-          // dim, which makes light-skinned models render as muddy/dark.
-          // Matrix: RGB *= 1.25 with +35 offset so shadows lift first, brights
-          // saturate gracefully into white.
-          child: ColorFiltered(
-            colorFilter: const ColorFilter.matrix(<double>[
-              1.25, 0, 0, 0, 35,
-              0, 1.25, 0, 0, 35,
-              0, 0, 1.25, 0, 35,
-              0, 0, 0, 1, 0,
-            ]),
-            child: _LiveCharacter(
-              src: _modelPath,
-              fallback: _PixelAvatarBlock(
-                avatarKey: avatarKey,
-                size: 240,
-                primary: p.primary,
-                accent: p.accent,
-                bg: p.surface,
-              ),
-            ),
-          ),
+        _PixelAvatarBlock(
+          avatarKey: avatarKey,
+          size: 264,
+          primary: p.primary,
+          accent: p.accent,
+          bg: p.surface,
         ),
         const SizedBox(height: 18),
         Text(
           displayName.toUpperCase(),
           style: _mono(p.textPrimary, size: 26, w: FontWeight.w900),
         ),
-        const SizedBox(height: 4),
-        Text(arena.toUpperCase(), style: _mono(p.accent, size: 12)),
       ],
     );
   }
 }
 
-/// Tries to render a 3D `.glb` character. If the asset is missing, shows
-/// the supplied fallback (e.g. the procedural pixel sprite).
-class _LiveCharacter extends StatefulWidget {
-  final String src;
-  final Widget fallback;
-  const _LiveCharacter({required this.src, required this.fallback});
-
-  @override
-  State<_LiveCharacter> createState() => _LiveCharacterState();
-}
-
-class _LiveCharacterState extends State<_LiveCharacter> {
-  late final Future<bool> _hasAsset;
-  final Flutter3DController _controller = Flutter3DController();
-
-  @override
-  void initState() {
-    super.initState();
-    _hasAsset = _checkAsset();
-  }
-
-  Future<bool> _checkAsset() async {
-    try {
-      final bytes = await rootBundle.load(widget.src);
-      return bytes.lengthInBytes > 0;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _hasAsset,
-      builder: (ctx, snap) {
-        if (!snap.hasData) return widget.fallback;
-        if (snap.data != true) return widget.fallback;
-        return Flutter3DViewer(
-          src: widget.src,
-          controller: _controller,
-          activeGestureInterceptor: false,
-          onLoad: (_) async {
-            // Frame the character close enough to read the face clearly.
-            _controller.setCameraOrbit(0, 78, 110);
-            _controller.setCameraTarget(0, 1, 0);
-            final anims = await _controller.getAvailableAnimations();
-            if (anims.isEmpty) return;
-            // Prefer Run > Walk > Dance > Idle > first.
-            // This way whichever .glb is dropped in, we pick the liveliest loop.
-            String pick = anims.first;
-            for (final keyword in ['run', 'walk', 'dance', 'idle']) {
-              final matches =
-                  anims.where((a) => a.toLowerCase().contains(keyword));
-              if (matches.isNotEmpty) {
-                pick = matches.first;
-                break;
-              }
-            }
-            _controller.playAnimation(animationName: pick);
-          },
-        );
-      },
-    );
-  }
-}
-
-/// A humanoid pixel-art character with idle animation.
+/// A cyberpunk ronin sprite with idle animation.
 ///
-/// The sprite itself is a fixed 14×14 grid; what makes it feel alive is a
-/// Ticker-driven loop that breathes (vertical bob + glow pulse), sways the
-/// arms slightly out-of-phase with the body, and blinks once per cycle.
+/// The sprite is a 22×28 grid drawn each frame with a small set of palette
+/// colors. The Ticker-driven loop breathes (vertical bob on the upper body),
+/// pulses the visor glow, and sways the hair tips slightly so the figure
+/// never reads as static.
 class _PixelAvatarBlock extends StatefulWidget {
   final String avatarKey;
   final double size;
@@ -451,7 +361,7 @@ class _PixelAvatarBlockState extends State<_PixelAvatarBlock>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2600),
+      duration: const Duration(milliseconds: 1800),
     )..repeat();
   }
 
@@ -465,134 +375,192 @@ class _PixelAvatarBlockState extends State<_PixelAvatarBlock>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (context, _) {
-        final t = _ctrl.value; // 0..1
-        // Breath = full sinusoid over the cycle.
-        final breath = math.sin(t * 2 * math.pi);
-        final glowAlpha = 0.30 + 0.25 * ((breath + 1) / 2);
-        // Quick blink window near the end of the cycle.
-        final isBlinking = t > 0.92 && t < 0.97;
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            color: widget.bg,
-            border: Border.all(color: widget.primary, width: 3),
-            boxShadow: [
-              BoxShadow(
-                color: widget.primary.withValues(alpha: glowAlpha),
-                blurRadius: 18 + 10 * ((breath + 1) / 2),
-              ),
-            ],
+      builder: (context, _) => SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: CustomPaint(
+          painter: _PixelAvatarPainter(
+            seed: widget.avatarKey,
+            primary: widget.primary,
+            accent: widget.accent,
+            t: _ctrl.value,
           ),
-          child: CustomPaint(
-            painter: _PixelAvatarPainter(
-              seed: widget.avatarKey,
-              primary: widget.primary,
-              accent: widget.accent,
-              breath: breath,
-              isBlinking: isBlinking,
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
-/// Sprite map for the humanoid. 14 rows × 14 cols.
-///   . empty   H head/skin   A accent strip   E eye   B body
-///   R arm     L leg         F foot
+/// Sprite map for the cyberpunk ronin. 28 rows × 22 cols.
+///   `.` empty       `K` hair (dark indigo)    `R` headband (red)
+///   `S` skin        `V` visor (glow strip)    `J` jacket main
+///   `T` jacket trim `D` jacket shadow         `M` belt buckle
+///   `P` pants       `B` boots
 const List<String> _avatarSprite = <String>[
-  '....HHHHHH....',
-  '...HHHHHHHH...',
-  '..HHAAAAAAHH..',
-  '..HHE.HH.EHH..',
-  '..HHHHHHHHHH..',
-  '...HHHHHHHH...',
-  '..BBBBBBBBBB..',
-  '.RBBAABBAABBR.',
-  '.RBBBBBBBBBBR.',
-  '.RBBBBBBBBBBR.',
-  '..BBBBBBBBBB..',
-  '..LLL....LLL..',
-  '..LLL....LLL..',
-  '..FFF....FFF..',
+  '........KKKKKK........',
+  '.......KKKKKKKK.......',
+  '......KKKKKKKKKK......',
+  '.....KKKKKKKKKKKK.....',
+  '.....KRRRRRRRRRRK.....',
+  '.....KRRRRRRRRRRK.....',
+  '.....KKSSSSSSSSKK.....',
+  '.....KSSSSSSSSSSK.....',
+  '.....KSSVVSSVVSSK.....',
+  '.....KSSVVSSVVSSK.....',
+  '.....KSSSSSSSSSSK.....',
+  '.....KKSSSSSSSSKK.....',
+  '......KSSSSSSSSK......',
+  '........KSSSSK........',
+  '.....TTTTTTTTTTTT.....',
+  '....TJJJJJJJJJJJJT....',
+  '....TJJJJDDDDJJJJT....',
+  '....TJJJJDDDDJJJJT....',
+  '...TJJJJJJDDJJJJJJT...',
+  '...TJJJJJJJJJJJJJJT...',
+  '....TJJTTTTTTTTJJT....',
+  '....TJJMMMMMMMMJJT....',
+  '.....JJJJJJJJJJJJ.....',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......BBBB..BBBB......',
 ];
 
 class _PixelAvatarPainter extends CustomPainter {
   final String seed;
   final Color primary;
   final Color accent;
-  final double breath; // -1..1
-  final bool isBlinking;
+  final double t; // 0..1
 
   _PixelAvatarPainter({
     required this.seed,
     required this.primary,
     required this.accent,
-    required this.breath,
-    required this.isBlinking,
+    required this.t,
   });
+
+  // Fixed (non palette-driven) sprite colors. These give the ronin a
+  // consistent identity across time-of-day palette shifts, while the
+  // jacket/trim continue to pick up the primary/accent.
+  static const _hair    = Color(0xFF15102E);
+  static const _hairLit = Color(0xFF2A1F55);
+  static const _band    = Color(0xFFE5364C);
+  static const _bandLit = Color(0xFFFF6A7C);
+  static const _skin    = Color(0xFFE8B89B);
+  static const _skinLit = Color(0xFFF5D4BC);
+  static const _pants   = Color(0xFF2A1F40);
+  static const _boots   = Color(0xFF120A22);
 
   @override
   void paint(Canvas canvas, Size size) {
     final rows = _avatarSprite.length;
     final cols = _avatarSprite.first.length;
-    final cell = size.width / cols;
+    final cell = math.min(size.width / cols, size.height / rows);
+    final dxBase = (size.width  - cell * cols) / 2;
+    final dyBase = (size.height - cell * rows) / 2;
 
-    final body = Paint()..color = primary;
-    final highlight = Paint()..color = accent;
-    final eye = Paint()
-      ..color = isBlinking ? primary : accent;
-    final foot = Paint()..color = primary.withValues(alpha: 0.85);
-    final arm = Paint()..color = accent.withValues(alpha: 0.9);
+    // Walking back-and-forth across the canvas, 1 round-trip per cycle.
+    final walkX = math.sin(t * 2 * math.pi) * size.width * 0.10;
 
-    // Breathing bob: shift the whole sprite up to 2px vertically.
-    final bob = breath * 2.0;
-    // Arms wave slightly opposite to breath.
-    final armBob = -breath * 2.0;
+    // 4 steps per cycle. Each step lifts one leg, alternating.
+    final stepIdx = (t * 4).floor() % 2;     // 0 or 1 — which leg is up
+    final stepProgress = (t * 4) % 1;        // 0..1 within the current step
+    final stepCurve = math.sin(stepProgress * math.pi); // 0 → 1 → 0 over the step
+    final legLift = stepCurve * cell * 0.55; // foot lifts off the ground
+    final bodyBob = -stepCurve * cell * 0.20; // body rises mid-step
+
+    // Visor glow pulses through the cycle.
+    final breath = math.sin(t * 2 * math.pi);
+    final visorMix = (breath + 1) / 2;
+    final visor = Color.lerp(accent, const Color(0xFFFFFFFF), 0.4 * visorMix)!;
+
+    // Hair tips drift slightly with motion.
+    final sway = math.sin(t * 2 * math.pi) * 1.2;
+
+    final jacketMain   = Paint()..color = primary;
+    final jacketTrim   = Paint()..color = accent;
+    final jacketShadow = Paint()..color = _shade(primary, 0.55);
+    final buckle       = Paint()..color = Color.lerp(accent, const Color(0xFFFFFFFF), 0.25)!;
 
     for (int y = 0; y < rows; y++) {
       final line = _avatarSprite[y];
       for (int x = 0; x < cols; x++) {
         final c = line[x];
         if (c == '.') continue;
+
         Paint paint;
-        double dy = bob;
+        double localDy = bodyBob;
+        double localDx = walkX;
+
         switch (c) {
-          case 'H':
-          case 'B':
-            paint = body;
-            break;
-          case 'A':
-            paint = highlight;
-            break;
-          case 'E':
-            paint = eye;
+          case 'K':
+            paint = (x >= cols / 2)
+                ? (Paint()..color = _hairLit)
+                : (Paint()..color = _hair);
+            if (y < 3) {
+              localDx += sway;
+            }
             break;
           case 'R':
-            paint = arm;
-            dy = armBob;
+            paint = (x == cols / 2 - 1 || x == cols / 2)
+                ? (Paint()..color = _bandLit)
+                : (Paint()..color = _band);
             break;
-          case 'L':
-            paint = body;
-            // Legs don't bob — they're "planted."
-            dy = 0;
+          case 'S':
+            paint = (x > cols / 2)
+                ? (Paint()..color = _skinLit)
+                : (Paint()..color = _skin);
             break;
-          case 'F':
-            paint = foot;
-            dy = 0;
+          case 'V':
+            paint = Paint()..color = visor;
+            break;
+          case 'J':
+            paint = jacketMain;
+            break;
+          case 'T':
+            paint = jacketTrim;
+            break;
+          case 'D':
+            paint = jacketShadow;
+            break;
+          case 'M':
+            paint = buckle;
+            break;
+          case 'P':
+          case 'B':
+            // Identify viewer-left vs viewer-right leg, then lift whichever
+            // one is currently mid-stride. Planted leg keeps both feet on
+            // the ground (no bob, no lift) — sells the heel-strike.
+            final isLeftLeg = x < cols / 2;
+            final liftedIsLeft = stepIdx == 0;
+            final amILifted = isLeftLeg == liftedIsLeft;
+            localDy = amILifted ? (bodyBob - legLift) : 0;
+            paint = Paint()..color = c == 'P' ? _pants : _boots;
             break;
           default:
-            paint = body;
+            paint = jacketMain;
         }
+
         canvas.drawRect(
-          Rect.fromLTWH(x * cell, y * cell + dy, cell + 0.5, cell + 0.5),
+          Rect.fromLTWH(
+            dxBase + x * cell + localDx,
+            dyBase + y * cell + localDy,
+            cell + 0.5,
+            cell + 0.5,
+          ),
           paint,
         );
       }
     }
+  }
+
+  /// Darken a color toward black by `amount` (0..1).
+  static Color _shade(Color c, double amount) {
+    final r = (c.r * 255.0 * amount).round().clamp(0, 255);
+    final g = (c.g * 255.0 * amount).round().clamp(0, 255);
+    final b = (c.b * 255.0 * amount).round().clamp(0, 255);
+    return Color.fromARGB(255, r, g, b);
   }
 
   @override
@@ -600,8 +568,7 @@ class _PixelAvatarPainter extends CustomPainter {
       oldDelegate.seed != seed ||
       oldDelegate.primary != primary ||
       oldDelegate.accent != accent ||
-      oldDelegate.breath != breath ||
-      oldDelegate.isBlinking != isBlinking;
+      oldDelegate.t != t;
 }
 
 class _XpBar extends StatelessWidget {
