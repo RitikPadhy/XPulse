@@ -2,9 +2,10 @@ class UserSnapshot {
   final UserProfile user;
   final TodayData today;
   final Baselines baselines;
-  final List<Quest> quests;
+  final QuestBook quests;
   final Dojo dojo;
   final List<Chest> chests;
+  final List<Clan> leaderboard;
 
   UserSnapshot({
     required this.user,
@@ -13,18 +14,20 @@ class UserSnapshot {
     required this.quests,
     required this.dojo,
     required this.chests,
+    required this.leaderboard,
   });
 
   factory UserSnapshot.fromJson(Map<String, dynamic> json) => UserSnapshot(
         user: UserProfile.fromJson(json['user'] as Map<String, dynamic>),
         today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
         baselines: Baselines.fromJson(json['baselines'] as Map<String, dynamic>),
-        quests: (json['quests'] as List)
-            .map((e) => Quest.fromJson(e as Map<String, dynamic>))
-            .toList(),
+        quests: QuestBook.fromJson(json['quests'] as Map<String, dynamic>),
         dojo: Dojo.fromJson(json['dojo'] as Map<String, dynamic>),
         chests: (json['chests'] as List)
             .map((e) => Chest.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        leaderboard: (json['leaderboard'] as List)
+            .map((e) => Clan.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
 }
@@ -33,6 +36,7 @@ class UserProfile {
   final String id;
   final String displayName;
   final int age;
+  final String joinedAt;
   final String arena;
   final int trophies;
   final String avatar;
@@ -41,6 +45,7 @@ class UserProfile {
     required this.id,
     required this.displayName,
     required this.age,
+    required this.joinedAt,
     required this.arena,
     required this.trophies,
     required this.avatar,
@@ -50,6 +55,7 @@ class UserProfile {
         id: json['id'] as String,
         displayName: json['displayName'] as String,
         age: json['age'] as int,
+        joinedAt: json['joinedAt'] as String,
         arena: json['arena'] as String,
         trophies: json['trophies'] as int,
         avatar: json['avatar'] as String,
@@ -100,6 +106,28 @@ class Baselines {
       averages: averagesRaw.map((k, v) => MapEntry(k, v as num)),
     );
   }
+}
+
+class QuestBook {
+  final List<String> initialActiveIds;
+  final List<Quest> pool;
+
+  QuestBook({required this.initialActiveIds, required this.pool});
+
+  Quest? byId(String id) {
+    for (final q in pool) {
+      if (q.id == id) return q;
+    }
+    return null;
+  }
+
+  factory QuestBook.fromJson(Map<String, dynamic> json) => QuestBook(
+        initialActiveIds:
+            (json['activeIds'] as List).map((e) => e as String).toList(),
+        pool: (json['pool'] as List)
+            .map((e) => Quest.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 }
 
 enum QuestStatus { inProgress, complete }
@@ -246,4 +274,49 @@ class Chest {
       unlocksAt: json['unlocksAt'] as String?,
     );
   }
+}
+
+class Clan {
+  final String id;
+  final String name;
+  final String tag;
+  final List<ClanMember> members;
+
+  Clan({
+    required this.id,
+    required this.name,
+    required this.tag,
+    required this.members,
+  });
+
+  int get totalTrophies =>
+      members.fold(0, (acc, m) => acc + m.trophies);
+
+  int get memberCount => members.length;
+
+  List<ClanMember> get sortedByTrophies =>
+      [...members]..sort((a, b) => b.trophies.compareTo(a.trophies));
+
+  factory Clan.fromJson(Map<String, dynamic> json) => Clan(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        tag: json['tag'] as String,
+        members: (json['members'] as List)
+            .map((e) => ClanMember.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class ClanMember {
+  final String id;
+  final String name;
+  final int trophies;
+
+  ClanMember({required this.id, required this.name, required this.trophies});
+
+  factory ClanMember.fromJson(Map<String, dynamic> json) => ClanMember(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        trophies: json['trophies'] as int,
+      );
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/home_screen.dart';
+import 'screens/app_shell.dart';
 import 'ui/contracts/component_library.dart';
 import 'ui/contracts/skin_scope.dart';
 import 'ui/skins/pixel_cyberpunk/pixel_cyberpunk_skin.dart';
@@ -23,13 +23,12 @@ class XPulseApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: palette.background,
-        textTheme: const TextTheme(),
       ),
       home: SkinScope(
         components: skin,
         palette: palette,
         band: band,
-        child: const HomeScreen(),
+        child: const AppShell(),
       ),
     );
   }
