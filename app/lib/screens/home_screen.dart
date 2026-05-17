@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../core/models/user_snapshot.dart';
 import '../core/repositories/user_repository.dart';
@@ -26,9 +26,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final c = scope.components;
     final p = scope.palette;
 
-    return c.background(
-      child: SafeArea(
-        child: FutureBuilder<UserSnapshot>(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: c.background(
+        child: SafeArea(
+          child: FutureBuilder<UserSnapshot>(
           future: _future,
           builder: (context, snap) {
             if (!snap.hasData) {
@@ -80,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             );
           },
+        ),
         ),
       ),
     );

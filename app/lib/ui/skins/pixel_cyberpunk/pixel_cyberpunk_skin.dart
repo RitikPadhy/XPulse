@@ -68,19 +68,21 @@ class _Background extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: p.backgroundGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+    return SizedBox.expand(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: p.background.withValues(alpha: 0.72),
+          gradient: LinearGradient(
+            colors: p.backgroundGradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        child: child,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: p.background.withValues(alpha: 0.72),
+          ),
+          child: child,
+        ),
       ),
     );
   }
