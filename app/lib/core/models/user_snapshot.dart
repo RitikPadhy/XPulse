@@ -17,6 +17,48 @@ class UserSnapshot {
     required this.leaderboard,
   });
 
+  /// Per-source breakdown of today's XP. Completed quests are listed
+  /// individually, critical strikes roll up into one bonus line, and any
+  /// remainder lands in a single "Daily Activity" line so the items always
+  /// sum to `today.xpEarned`.
+  List<XpGain> get xpBreakdown {
+    const critXp = 50;
+    final items = <XpGain>[];
+    int accounted = 0;
+
+    for (final q in quests.pool) {
+      if (q.status == QuestStatus.complete) {
+        items.add(XpGain(
+          label: q.title,
+          source: XpSource.quest,
+          xp: q.xpReward,
+        ));
+        accounted += q.xpReward;
+      }
+    }
+
+    final crits = today.criticalStrikes;
+    if (crits > 0) {
+      final bonus = crits * critXp;
+      items.add(XpGain(
+        label: '$crits× Critical Strike',
+        source: XpSource.crit,
+        xp: bonus,
+      ));
+      accounted += bonus;
+    }
+
+    final remainder = today.xpEarned - accounted;
+    if (remainder > 0) {
+      items.add(XpGain(
+        label: 'Daily Activity',
+        source: XpSource.activity,
+        xp: remainder,
+      ));
+    }
+    return items;
+  }
+
   factory UserSnapshot.fromJson(Map<String, dynamic> json) => UserSnapshot(
         user: UserProfile.fromJson(json['user'] as Map<String, dynamic>),
         today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
@@ -305,6 +347,15 @@ class Clan {
             .map((e) => ClanMember.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
+}
+
+enum XpSource { quest, crit, activity }
+
+class XpGain {
+  final String label;
+  final XpSource source;
+  final int xp;
+  const XpGain({required this.label, required this.source, required this.xp});
 }
 
 class ClanMember {

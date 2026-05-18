@@ -19,7 +19,7 @@ abstract class ComponentLibrary {
   /// Small icon button shown in the top-right of the home page.
   Widget profileButton({required VoidCallback onTap});
 
-  /// Body of the profile sheet (shown inside a modal).
+  /// Body of the profile view (rendered inline within the home tab).
   Widget profileSheet({required UserProfile user});
 
   /// Section label used inside scrollable bodies.
@@ -28,8 +28,21 @@ abstract class ComponentLibrary {
   /// Large pixel-art avatar block — centerpiece of the home page.
   Widget avatar({required String avatarKey, required String displayName, required String arena});
 
-  /// Daily XP bar.
-  Widget xpBar({required int earned, required int goal, required double progress});
+  /// Daily XP bar. Tappable when `onTap` is non-null (used to open the
+  /// breakdown view).
+  Widget xpBar({
+    required int earned,
+    required int goal,
+    required double progress,
+    VoidCallback? onTap,
+  });
+
+  /// Body of the XP breakdown view (rendered inline within the home tab).
+  Widget xpBreakdownSheet({
+    required int earned,
+    required int goal,
+    required List<XpGain> items,
+  });
 
   /// One quest tile in the picker. Mode = active (tap to remove) or available
   /// (tap to add, disabled if active list is full).

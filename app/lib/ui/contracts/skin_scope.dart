@@ -10,13 +10,11 @@ import 'component_library.dart';
 class SkinScope extends InheritedWidget {
   final ComponentLibrary components;
   final Palette palette;
-  final TimeBand band;
 
   const SkinScope({
     super.key,
     required this.components,
     required this.palette,
-    required this.band,
     required super.child,
   });
 
@@ -29,6 +27,5 @@ class SkinScope extends InheritedWidget {
   @override
   bool updateShouldNotify(SkinScope oldWidget) =>
       components != oldWidget.components ||
-      palette != oldWidget.palette ||
-      band != oldWidget.band;
+      palette != oldWidget.palette;
 }

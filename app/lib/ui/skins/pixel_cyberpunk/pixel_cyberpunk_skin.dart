@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 
+import '../../../core/app_state.dart';
 import '../../../core/models/user_snapshot.dart';
 import '../../contracts/component_library.dart';
 import '../../contracts/skin_scope.dart';
-import '../../theme/time_of_day_palette.dart';
 
 class PixelCyberpunkSkin implements ComponentLibrary {
   const PixelCyberpunkSkin();
@@ -44,8 +44,17 @@ class PixelCyberpunkSkin implements ComponentLibrary {
     required int earned,
     required int goal,
     required double progress,
+    VoidCallback? onTap,
   }) =>
-      _XpBar(earned: earned, goal: goal, progress: progress);
+      _XpBar(earned: earned, goal: goal, progress: progress, onTap: onTap);
+
+  @override
+  Widget xpBreakdownSheet({
+    required int earned,
+    required int goal,
+    required List<XpGain> items,
+  }) =>
+      _XpBreakdownSheet(earned: earned, goal: goal, items: items);
 
   @override
   Widget questPickerTile({
@@ -96,9 +105,34 @@ TextStyle _mono(Color c, {double size = 12, FontWeight w = FontWeight.w600}) =>
       height: 1.2,
     );
 
-class _Background extends StatelessWidget {
+class _Background extends StatefulWidget {
   final Widget child;
   const _Background({required this.child});
+
+  @override
+  State<_Background> createState() => _BackgroundState();
+}
+
+class _BackgroundState extends State<_Background>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    // Slow scroll for the grid floor — matches the strolling pace of the
+    // ronin without being distracting on text-heavy screens.
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,21 +140,24 @@ class _Background extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: p.backgroundGradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        AnimatedBuilder(
+          animation: _ctrl,
+          builder: (context, _) => CustomPaint(
+            painter: _SceneBackgroundPainter(
+              primary: p.primary,
+              accent: p.accent,
+              bg: p.background,
+              t: _ctrl.value,
             ),
           ),
         ),
+        // Light darkening to keep on-top text legible against the bright sun.
         DecoratedBox(
           decoration: BoxDecoration(
-            color: p.background.withValues(alpha: 0.72),
+            color: p.background.withValues(alpha: 0.18),
           ),
         ),
-        child,
+        widget.child,
       ],
     );
   }
@@ -134,8 +171,7 @@ class _PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scope = SkinScope.of(context);
-    final p = scope.palette;
+    final p = SkinScope.of(context).palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
@@ -152,11 +188,6 @@ class _PageHeader extends StatelessWidget {
           Text(
             title.toUpperCase(),
             style: _mono(p.textPrimary, size: 12, w: FontWeight.w800),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '·  ${labelFor(scope.band)}'.toUpperCase(),
-            style: _mono(p.textMuted, size: 9),
           ),
           const Spacer(),
           if (trailing != null) trailing!,
@@ -197,70 +228,204 @@ class _ProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return Container(
-      decoration: BoxDecoration(
-        color: p.surface,
-        border: Border(top: BorderSide(color: p.primary, width: 3)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+    final snap = AppStateScope.of(context).snapshot;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
+          _ProfileHero(user: user),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Today'),
+          const SizedBox(height: 10),
           Row(
             children: [
-              _PixelAvatarBlock(
-                avatarKey: user.avatar,
-                size: 56,
-                primary: p.primary,
-                accent: p.accent,
-                bg: p.background,
-              ),
-              const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(user.displayName.toUpperCase(),
-                        style: _mono(p.textPrimary,
-                            size: 18, w: FontWeight.w900)),
-                    Text(user.arena.toUpperCase(),
-                        style: _mono(p.accent, size: 11)),
-                  ],
+                child: _StatTile(
+                  label: 'XP EARNED',
+                  value: '${snap.today.xpEarned}',
+                  sub: '/ ${snap.today.xpDailyGoal}',
+                  stripe: p.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StatTile(
+                  label: 'CRIT STRIKES',
+                  value: '${snap.today.criticalStrikes}',
+                  stripe: p.accent,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          _ProfileRow(label: 'AGE', value: '${user.age}'),
-          _ProfileRow(label: 'JOINED', value: user.joinedAt),
-          _ProfileRow(label: 'TROPHIES', value: '${user.trophies}'),
-          _ProfileRow(label: 'AVATAR', value: user.avatar.toUpperCase()),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Dojo'),
+          const SizedBox(height: 4),
+          _DataRow(label: 'DOJO', value: snap.dojo.name.toUpperCase()),
+          _DataRow(label: 'SENSEI', value: snap.dojo.sensei.toUpperCase()),
+          _DataRow(label: 'MEMBERS', value: '${snap.dojo.memberCount}'),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Record'),
+          const SizedBox(height: 4),
+          _DataRow(label: 'TROPHIES', value: '${user.trophies}'),
+          _DataRow(label: 'ARENA', value: user.arena.toUpperCase()),
+          _DataRow(label: 'AGE', value: '${user.age}'),
+          _DataRow(label: 'JOINED', value: user.joinedAt),
+          _DataRow(label: 'AVATAR', value: user.avatar.toUpperCase()),
+          _DataRow(label: 'ID', value: user.id.toUpperCase()),
         ],
       ),
     );
   }
 }
 
-class _ProfileRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _ProfileRow({required this.label, required this.value});
+class _ProfileHero extends StatelessWidget {
+  final UserProfile user;
+  const _ProfileHero({required this.user});
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _PixelAvatarBlock(
+          avatarKey: user.avatar,
+          size: 96,
+          primary: p.primary,
+          accent: p.accent,
+          bg: p.background,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user.displayName.toUpperCase(),
+                style: _mono(p.textPrimary, size: 22, w: FontWeight.w900),
+              ),
+              const SizedBox(height: 4),
+              Text(user.arena.toUpperCase(),
+                  style: _mono(p.accent, size: 11)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                color: p.primary.withValues(alpha: 0.18),
+                child: Text(
+                  '★ ${user.trophies}',
+                  style: _mono(p.primary, size: 12, w: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileSectionLabel extends StatelessWidget {
+  final String label;
+  const _ProfileSectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Row(
+      children: [
+        Container(width: 6, height: 6, color: p.accent),
+        const SizedBox(width: 8),
+        Text(label.toUpperCase(),
+            style: _mono(p.textPrimary, size: 11, w: FontWeight.w800)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: p.textMuted.withValues(alpha: 0.25),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final String? sub;
+  final Color stripe;
+  const _StatTile({
+    required this.label,
+    required this.value,
+    this.sub,
+    required this.stripe,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 10, 12),
+      decoration: BoxDecoration(
+        color: p.surface,
+        border: Border(left: BorderSide(color: stripe, width: 3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: _mono(p.textMuted, size: 9)),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(value,
+                  style: _mono(p.textPrimary, size: 20, w: FontWeight.w900)),
+              if (sub != null) ...[
+                const SizedBox(width: 4),
+                Text(sub!, style: _mono(p.textMuted, size: 11)),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DataRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DataRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom:
+              BorderSide(color: p.textMuted.withValues(alpha: 0.12), width: 1),
+        ),
+      ),
       child: Row(
         children: [
           SizedBox(
-            width: 88,
+            width: 96,
             child: Text(label, style: _mono(p.textMuted, size: 11)),
           ),
           Expanded(
-            child: Text(value,
-                style: _mono(p.textPrimary, size: 13, w: FontWeight.w800)),
+            child: Text(
+              value,
+              style: _mono(p.textPrimary, size: 13, w: FontWeight.w700),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -571,20 +736,151 @@ class _PixelAvatarPainter extends CustomPainter {
       oldDelegate.t != t;
 }
 
+/// Synthwave scene behind the ronin: gradient sky, retro sun with
+/// horizontal stripe cutouts, neon horizon, perspective grid floor that
+/// scrolls toward the viewer.
+class _SceneBackgroundPainter extends CustomPainter {
+  final Color primary;
+  final Color accent;
+  final Color bg;
+  final double t; // 0..1, loops
+
+  _SceneBackgroundPainter({
+    required this.primary,
+    required this.accent,
+    required this.bg,
+    required this.t,
+  });
+
+  static const _skyTop = Color(0xFF0B0420);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final horizonY = h * 0.72;
+    final floorH = h - horizonY;
+
+    // ---------- sky ----------
+    final skyRect = Rect.fromLTWH(0, 0, w, horizonY);
+    final skyBottom = _shade(primary, 0.30);
+    canvas.drawRect(
+      skyRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_skyTop, skyBottom],
+        ).createShader(skyRect),
+    );
+
+    // ---------- stars ----------
+    // Deterministic constellation — looks intentional, twinkles independently.
+    const stars = <List<double>>[
+      [0.08, 0.10], [0.18, 0.22], [0.28, 0.06], [0.40, 0.16],
+      [0.55, 0.09], [0.70, 0.20], [0.82, 0.08], [0.92, 0.30],
+      [0.12, 0.40], [0.36, 0.48], [0.68, 0.42], [0.88, 0.52],
+    ];
+    final starPaint = Paint();
+    for (int i = 0; i < stars.length; i++) {
+      final s = stars[i];
+      final twinkle = (math.sin(t * 2 * math.pi + i * 0.9) + 1) / 2; // 0..1
+      starPaint.color = const Color(0xFFFFFFFF)
+          .withValues(alpha: 0.25 + 0.55 * twinkle);
+      canvas.drawCircle(
+        Offset(s[0] * w, s[1] * horizonY),
+        0.8 + 0.6 * twinkle,
+        starPaint,
+      );
+    }
+
+    // ---------- retro sun (half-sun rising at horizon) ----------
+    // Anchored on the horizon so the bottom half is clipped by the floor —
+    // gives you the iconic half-circle. Sized off the smaller dimension so
+    // it stays a recognizable circle on both narrow and wide screens.
+    final sunCenter = Offset(w * 0.5, horizonY);
+    final sunR = math.min(w, h) * 0.38;
+    final sunRect = Rect.fromCircle(center: sunCenter, radius: sunR);
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, w, horizonY));
+    canvas.drawCircle(
+      sunCenter,
+      sunR,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(accent, const Color(0xFFFFE4B0), 0.55)!,
+            primary,
+            _shade(primary, 0.55),
+          ],
+        ).createShader(sunRect),
+    );
+    canvas.restore();
+
+    // ---------- horizon line + glow ----------
+    canvas.drawRect(
+      Rect.fromLTWH(0, horizonY - 4, w, 5),
+      Paint()..color = accent.withValues(alpha: 0.18),
+    );
+    canvas.drawLine(
+      Offset(0, horizonY),
+      Offset(w, horizonY),
+      Paint()
+        ..color = accent
+        ..strokeWidth = 1.5,
+    );
+
+    // ---------- flat floor ----------
+    // Smooth dark gradient below the horizon — no lines, no patterns. Lets
+    // the ronin and sun carry the scene.
+    final floorRect = Rect.fromLTWH(0, horizonY, w, floorH);
+    canvas.drawRect(
+      floorRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            _shade(primary, 0.18),
+            _shade(primary, 0.06),
+          ],
+        ).createShader(floorRect),
+    );
+  }
+
+  static Color _shade(Color c, double amount) {
+    final r = (c.r * 255.0 * amount).round().clamp(0, 255);
+    final g = (c.g * 255.0 * amount).round().clamp(0, 255);
+    final b = (c.b * 255.0 * amount).round().clamp(0, 255);
+    return Color.fromARGB(255, r, g, b);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SceneBackgroundPainter old) =>
+      old.t != t ||
+      old.primary != primary ||
+      old.accent != accent ||
+      old.bg != bg;
+}
+
 class _XpBar extends StatelessWidget {
   final int earned;
   final int goal;
   final double progress;
+  final VoidCallback? onTap;
   const _XpBar({
     required this.earned,
     required this.goal,
     required this.progress,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return Padding(
+    final bar = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,6 +933,112 @@ class _XpBar extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+    if (onTap == null) return bar;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: bar,
+    );
+  }
+}
+
+class _XpBreakdownSheet extends StatelessWidget {
+  final int earned;
+  final int goal;
+  final List<XpGain> items;
+  const _XpBreakdownSheet({
+    required this.earned,
+    required this.goal,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            decoration: BoxDecoration(
+              color: p.surface,
+              border: Border.all(color: p.primary, width: 2),
+              boxShadow: [
+                BoxShadow(color: p.primary.withValues(alpha: 0.35), blurRadius: 18),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('TODAY · XP EARNED', style: _mono(p.textMuted, size: 10)),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('$earned',
+                        style: _mono(p.primary, size: 32, w: FontWeight.w900)),
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text('/ $goal XP',
+                          style: _mono(p.textMuted, size: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          const _ProfileSectionLabel(label: 'Sources'),
+          const SizedBox(height: 6),
+          for (final item in items) _XpGainRow(item: item),
+        ],
+      ),
+    );
+  }
+}
+
+class _XpGainRow extends StatelessWidget {
+  final XpGain item;
+  const _XpGainRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    final (tag, stripe) = switch (item.source) {
+      XpSource.quest    => ('QUEST',    p.primary),
+      XpSource.crit     => ('CRIT',     p.accent),
+      XpSource.activity => ('ACTIVITY', p.textMuted),
+    };
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: p.surface,
+        border: Border(left: BorderSide(color: stripe, width: 3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(tag, style: _mono(stripe, size: 9, w: FontWeight.w800)),
+                const SizedBox(height: 3),
+                Text(item.label.toUpperCase(),
+                    style: _mono(p.textPrimary, size: 12, w: FontWeight.w700)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text('+${item.xp} XP',
+              style: _mono(stripe, size: 13, w: FontWeight.w900)),
         ],
       ),
     );
