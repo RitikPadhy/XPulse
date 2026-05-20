@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../core/models/user_snapshot.dart';
-import '../core/repositories/user_repository.dart';
+import '../core/app_state.dart';
 import '../ui/contracts/skin_scope.dart';
+
+enum _View { home, profile, xpBreakdown }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,77 +13,147 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final Future<UserSnapshot> _future;
+  _View _view = _View.home;
 
-  @override
-  void initState() {
-    super.initState();
-    _future = UserRepository().loadCurrent();
-  }
+  void _go(_View v) => setState(() => _view = v);
 
   @override
   Widget build(BuildContext context) {
-    final scope = SkinScope.of(context);
-    final c = scope.components;
-    final p = scope.palette;
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      child: switch (_view) {
+        _View.profile => _ProfileView(
+            key: const ValueKey('profile'),
+            onBack: () => _go(_View.home),
+          ),
+        _View.xpBreakdown => _XpBreakdownView(
+            key: const ValueKey('xp-breakdown'),
+            onBack: () => _go(_View.home),
+          ),
+        _View.home => _HomeView(
+            key: const ValueKey('home'),
+            onOpenProfile: () => _go(_View.profile),
+            onOpenXpBreakdown: () => _go(_View.xpBreakdown),
+          ),
+      },
+    );
+  }
+}
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: c.background(
-        child: SafeArea(
-          child: FutureBuilder<UserSnapshot>(
-          future: _future,
-          builder: (context, snap) {
-            if (!snap.hasData) {
-              return Center(
-                child: Text(
-                  'BOOTING…',
-                  style: TextStyle(
-                    color: p.textMuted,
-                    fontFamily: 'Courier',
-                    letterSpacing: 2,
-                  ),
-                ),
-              );
-            }
-            final data = snap.data!;
-            return ListView(
-              padding: const EdgeInsets.only(bottom: 32),
-              children: [
-                c.topBar(
-                  userName: data.user.displayName,
-                  arena: data.user.arena,
-                  trophies: data.user.trophies,
-                ),
-                const SizedBox(height: 8),
-                c.xpBar(
-                  earned: data.today.xpEarned,
-                  goal: data.today.xpDailyGoal,
-                  progress: data.today.xpProgress,
-                ),
-                c.sectionHeader(label: 'Weekly Boss — ${data.dojo.name}'),
-                c.bossFightCard(boss: data.dojo.weeklyBoss),
-                if (data.dojo.activeBuffs.isNotEmpty) ...[
-                  c.sectionHeader(label: 'Active Buffs'),
-                  ...data.dojo.activeBuffs.map((b) => c.buffPill(buff: b)),
-                ],
-                c.sectionHeader(label: "Today's Quests"),
-                ...data.quests.map((q) => c.questCard(quest: q)),
-                c.sectionHeader(label: 'Chests'),
-                SizedBox(
-                  height: 110,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: data.chests.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 10),
-                    itemBuilder: (_, i) => c.chestTile(chest: data.chests[i]),
-                  ),
-                ),
-              ],
-            );
-          },
+class _HomeView extends StatelessWidget {
+  final VoidCallback onOpenProfile;
+  final VoidCallback onOpenXpBreakdown;
+  const _HomeView({
+    super.key,
+    required this.onOpenProfile,
+    required this.onOpenXpBreakdown,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SkinScope.of(context).components;
+    final snap = AppStateScope.of(context).snapshot;
+
+    return Column(
+      children: [
+        c.pageHeader(
+          title: 'Home',
+          trailing: c.profileButton(onTap: onOpenProfile),
         ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 8),
+          child: c.xpBar(
+            earned: snap.today.xpEarned,
+            goal: snap.today.xpDailyGoal,
+            progress: snap.today.xpProgress,
+            onTap: onOpenXpBreakdown,
+          ),
+        ),
+        const Spacer(flex: 4),
+        c.avatar(
+          avatarKey: snap.user.avatar,
+          displayName: snap.user.displayName,
+          arena: snap.user.arena,
+        ),
+        const Spacer(flex: 2),
+      ],
+    );
+  }
+}
+
+class _ProfileView extends StatelessWidget {
+  final VoidCallback onBack;
+  const _ProfileView({super.key, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SkinScope.of(context).components;
+    final user = AppStateScope.of(context).snapshot.user;
+
+    return Column(
+      children: [
+        c.pageHeader(
+          title: 'Profile',
+          trailing: _BackButton(onTap: onBack),
+        ),
+        const SizedBox(height: 12),
+        Expanded(child: c.profileSheet(user: user)),
+      ],
+    );
+  }
+}
+
+class _XpBreakdownView extends StatelessWidget {
+  final VoidCallback onBack;
+  const _XpBreakdownView({super.key, required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = SkinScope.of(context).components;
+    final snap = AppStateScope.of(context).snapshot;
+
+    return Column(
+      children: [
+        c.pageHeader(
+          title: 'Daily XP',
+          trailing: _BackButton(onTap: onBack),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: c.xpBreakdownSheet(
+            earned: snap.today.xpEarned,
+            goal: snap.today.xpDailyGoal,
+            items: snap.xpBreakdown,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _BackButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: p.accent, width: 2),
+        ),
+        child: Text(
+          'BACK',
+          style: TextStyle(
+            color: p.accent,
+            fontFamily: 'Courier',
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+          ),
         ),
       ),
     );

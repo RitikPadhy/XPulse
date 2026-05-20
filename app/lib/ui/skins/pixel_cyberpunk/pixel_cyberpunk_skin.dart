@@ -1,9 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
+import '../../../core/app_state.dart';
 import '../../../core/models/user_snapshot.dart';
 import '../../contracts/component_library.dart';
 import '../../contracts/skin_scope.dart';
-import '../../theme/time_of_day_palette.dart';
 
 class PixelCyberpunkSkin implements ComponentLibrary {
   const PixelCyberpunkSkin();
@@ -15,35 +17,77 @@ class PixelCyberpunkSkin implements ComponentLibrary {
   Widget background({required Widget child}) => _Background(child: child);
 
   @override
-  Widget topBar({
-    required String userName,
+  Widget pageHeader({required String title, Widget? trailing}) =>
+      _PageHeader(title: title, trailing: trailing);
+
+  @override
+  Widget profileButton({required VoidCallback onTap}) =>
+      _ProfileButton(onTap: onTap);
+
+  @override
+  Widget profileSheet({required UserProfile user}) =>
+      _ProfileSheet(user: user);
+
+  @override
+  Widget sectionHeader({required String label}) => _SectionHeader(label: label);
+
+  @override
+  Widget avatar({
+    required String avatarKey,
+    required String displayName,
     required String arena,
-    required int trophies,
   }) =>
-      _TopBar(userName: userName, arena: arena, trophies: trophies);
+      _Avatar(avatarKey: avatarKey, displayName: displayName, arena: arena);
 
   @override
   Widget xpBar({
     required int earned,
     required int goal,
     required double progress,
+    VoidCallback? onTap,
   }) =>
-      _XpBar(earned: earned, goal: goal, progress: progress);
+      _XpBar(earned: earned, goal: goal, progress: progress, onTap: onTap);
 
   @override
-  Widget questCard({required Quest quest}) => _QuestCard(quest: quest);
+  Widget xpBreakdownSheet({
+    required int earned,
+    required int goal,
+    required List<XpGain> items,
+  }) =>
+      _XpBreakdownSheet(earned: earned, goal: goal, items: items);
 
   @override
-  Widget bossFightCard({required BossFight boss}) => _BossFightCard(boss: boss);
+  Widget questPickerTile({
+    required Quest quest,
+    required bool isActive,
+    required bool canActivate,
+    required VoidCallback onTap,
+  }) =>
+      _QuestPickerTile(
+        quest: quest,
+        isActive: isActive,
+        canActivate: canActivate,
+        onTap: onTap,
+      );
 
   @override
-  Widget buffPill({required Buff buff}) => _BuffPill(buff: buff);
+  Widget clanRow({
+    required int rank,
+    required Clan clan,
+    required VoidCallback onTap,
+  }) =>
+      _ClanRow(rank: rank, clan: clan, onTap: onTap);
 
   @override
-  Widget chestTile({required Chest chest}) => _ChestTile(chest: chest);
+  Widget clanDetailHeader({required Clan clan}) => _ClanDetailHeader(clan: clan);
 
   @override
-  Widget sectionHeader({required String label}) => _SectionHeader(label: label);
+  Widget memberRow({
+    required int rank,
+    required ClanMember member,
+    required bool isCurrentUser,
+  }) =>
+      _MemberRow(rank: rank, member: member, isCurrentUser: isCurrentUser);
 }
 
 // ---------------------------------------------------------------------------
@@ -61,52 +105,77 @@ TextStyle _mono(Color c, {double size = 12, FontWeight w = FontWeight.w600}) =>
       height: 1.2,
     );
 
-class _Background extends StatelessWidget {
+class _Background extends StatefulWidget {
   final Widget child;
   const _Background({required this.child});
 
   @override
+  State<_Background> createState() => _BackgroundState();
+}
+
+class _BackgroundState extends State<_Background>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    // Slow scroll for the grid floor — matches the strolling pace of the
+    // ronin without being distracting on text-heavy screens.
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return SizedBox.expand(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: p.backgroundGradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        AnimatedBuilder(
+          animation: _ctrl,
+          builder: (context, _) => CustomPaint(
+            painter: _SceneBackgroundPainter(
+              primary: p.primary,
+              accent: p.accent,
+              bg: p.background,
+              t: _ctrl.value,
+            ),
           ),
         ),
-        child: DecoratedBox(
+        // Light darkening to keep on-top text legible against the bright sun.
+        DecoratedBox(
           decoration: BoxDecoration(
-            color: p.background.withValues(alpha: 0.72),
+            color: p.background.withValues(alpha: 0.18),
           ),
-          child: child,
         ),
-      ),
+        widget.child,
+      ],
     );
   }
 }
 
-class _TopBar extends StatelessWidget {
-  final String userName;
-  final String arena;
-  final int trophies;
-  const _TopBar({
-    required this.userName,
-    required this.arena,
-    required this.trophies,
-  });
+
+class _PageHeader extends StatelessWidget {
+  final String title;
+  final Widget? trailing;
+  const _PageHeader({required this.title, this.trailing});
 
   @override
   Widget build(BuildContext context) {
-    final scope = SkinScope.of(context);
-    final p = scope.palette;
+    final p = SkinScope.of(context).palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
-          // Mini XPulse logo — kept small per design constraint.
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -116,85 +185,246 @@ class _TopBar extends StatelessWidget {
             child: Text('XPULSE', style: _mono(p.primary, size: 10)),
           ),
           const SizedBox(width: 10),
-          Text(labelFor(scope.band).toUpperCase(),
-              style: _mono(p.textMuted, size: 9)),
+          Text(
+            title.toUpperCase(),
+            style: _mono(p.textPrimary, size: 12, w: FontWeight.w800),
+          ),
           const Spacer(),
-          Text('$trophies',
-              style: _mono(p.accent, size: 14, w: FontWeight.w800)),
-          const SizedBox(width: 4),
-          Text('TR', style: _mono(p.textMuted, size: 10)),
+          if (trailing != null) trailing!,
         ],
       ),
     );
   }
 }
 
-class _XpBar extends StatelessWidget {
-  final int earned;
-  final int goal;
-  final double progress;
-  const _XpBar({
-    required this.earned,
-    required this.goal,
-    required this.progress,
+class _ProfileButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ProfileButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: p.surface,
+          border: Border.all(color: p.accent, width: 2),
+        ),
+        child: Center(
+          child: Text('P', style: _mono(p.accent, size: 14, w: FontWeight.w900)),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSheet extends StatelessWidget {
+  final UserProfile user;
+  const _ProfileSheet({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    final snap = AppStateScope.of(context).snapshot;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ProfileHero(user: user),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Today'),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  label: 'XP EARNED',
+                  value: '${snap.today.xpEarned}',
+                  sub: '/ ${snap.today.xpDailyGoal}',
+                  stripe: p.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StatTile(
+                  label: 'CRIT STRIKES',
+                  value: '${snap.today.criticalStrikes}',
+                  stripe: p.accent,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Dojo'),
+          const SizedBox(height: 4),
+          _DataRow(label: 'DOJO', value: snap.dojo.name.toUpperCase()),
+          _DataRow(label: 'SENSEI', value: snap.dojo.sensei.toUpperCase()),
+          _DataRow(label: 'MEMBERS', value: '${snap.dojo.memberCount}'),
+          const SizedBox(height: 22),
+
+          const _ProfileSectionLabel(label: 'Record'),
+          const SizedBox(height: 4),
+          _DataRow(label: 'TROPHIES', value: '${user.trophies}'),
+          _DataRow(label: 'ARENA', value: user.arena.toUpperCase()),
+          _DataRow(label: 'AGE', value: '${user.age}'),
+          _DataRow(label: 'JOINED', value: user.joinedAt),
+          _DataRow(label: 'AVATAR', value: user.avatar.toUpperCase()),
+          _DataRow(label: 'ID', value: user.id.toUpperCase()),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHero extends StatelessWidget {
+  final UserProfile user;
+  const _ProfileHero({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _PixelAvatarBlock(
+          avatarKey: user.avatar,
+          size: 96,
+          primary: p.primary,
+          accent: p.accent,
+          bg: p.background,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                user.displayName.toUpperCase(),
+                style: _mono(p.textPrimary, size: 22, w: FontWeight.w900),
+              ),
+              const SizedBox(height: 4),
+              Text(user.arena.toUpperCase(),
+                  style: _mono(p.accent, size: 11)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                color: p.primary.withValues(alpha: 0.18),
+                child: Text(
+                  '★ ${user.trophies}',
+                  style: _mono(p.primary, size: 12, w: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileSectionLabel extends StatelessWidget {
+  final String label;
+  const _ProfileSectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Row(
+      children: [
+        Container(width: 6, height: 6, color: p.accent),
+        const SizedBox(width: 8),
+        Text(label.toUpperCase(),
+            style: _mono(p.textPrimary, size: 11, w: FontWeight.w800)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: p.textMuted.withValues(alpha: 0.25),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final String? sub;
+  final Color stripe;
+  const _StatTile({
+    required this.label,
+    required this.value,
+    this.sub,
+    required this.stripe,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 10, 12),
+      decoration: BoxDecoration(
+        color: p.surface,
+        border: Border(left: BorderSide(color: stripe, width: 3)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(label, style: _mono(p.textMuted, size: 9)),
+          const SizedBox(height: 4),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
-              Text('DAILY XP', style: _mono(p.textMuted, size: 10)),
-              const Spacer(),
-              Text('$earned / $goal',
-                  style: _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
+              Text(value,
+                  style: _mono(p.textPrimary, size: 20, w: FontWeight.w900)),
+              if (sub != null) ...[
+                const SizedBox(width: 4),
+                Text(sub!, style: _mono(p.textMuted, size: 11)),
+              ],
             ],
           ),
-          const SizedBox(height: 6),
-          // Pixel-style bar — segmented, no rounded corners, neon fill.
-          Container(
-            height: 18,
-            decoration: BoxDecoration(
-              color: p.surface,
-              border: Border.all(color: p.primary, width: 2),
-            ),
-            child: LayoutBuilder(
-              builder: (ctx, c) => Stack(
-                children: [
-                  Container(
-                    width: c.maxWidth * progress,
-                    decoration: BoxDecoration(
-                      color: p.primary,
-                      boxShadow: [
-                        BoxShadow(color: p.primary, blurRadius: 8),
-                      ],
-                    ),
-                  ),
-                  // Pixel segments overlay — thin vertical ticks every 10%.
-                  Row(
-                    children: List.generate(
-                      10,
-                      (_) => Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                color: p.background.withValues(alpha: 0.35),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DataRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _DataRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom:
+              BorderSide(color: p.textMuted.withValues(alpha: 0.12), width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 96,
+            child: Text(label, style: _mono(p.textMuted, size: 11)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: _mono(p.textPrimary, size: 13, w: FontWeight.w700),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -231,149 +461,757 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _QuestCard extends StatelessWidget {
-  final Quest quest;
-  const _QuestCard({required this.quest});
+class _Avatar extends StatelessWidget {
+  final String avatarKey;
+  final String displayName;
+  final String arena;
+  const _Avatar({
+    required this.avatarKey,
+    required this.displayName,
+    required this.arena,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    final done = quest.status == QuestStatus.complete;
-    final fillColor = done ? p.accent : p.primary;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: p.surface,
-        border: Border.all(color: fillColor, width: 2),
+    return Column(
+      children: [
+        _PixelAvatarBlock(
+          avatarKey: avatarKey,
+          size: 264,
+          primary: p.primary,
+          accent: p.accent,
+          bg: p.surface,
+        ),
+        const SizedBox(height: 18),
+        Text(
+          displayName.toUpperCase(),
+          style: _mono(p.textPrimary, size: 26, w: FontWeight.w900),
+        ),
+      ],
+    );
+  }
+}
+
+/// A cyberpunk ronin sprite with idle animation.
+///
+/// The sprite is a 22×28 grid drawn each frame with a small set of palette
+/// colors. The Ticker-driven loop breathes (vertical bob on the upper body),
+/// pulses the visor glow, and sways the hair tips slightly so the figure
+/// never reads as static.
+class _PixelAvatarBlock extends StatefulWidget {
+  final String avatarKey;
+  final double size;
+  final Color primary;
+  final Color accent;
+  final Color bg;
+  const _PixelAvatarBlock({
+    required this.avatarKey,
+    required this.size,
+    required this.primary,
+    required this.accent,
+    required this.bg,
+  });
+
+  @override
+  State<_PixelAvatarBlock> createState() => _PixelAvatarBlockState();
+}
+
+class _PixelAvatarBlockState extends State<_PixelAvatarBlock>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) => SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: CustomPaint(
+          painter: _PixelAvatarPainter(
+            seed: widget.avatarKey,
+            primary: widget.primary,
+            accent: widget.accent,
+            t: _ctrl.value,
+          ),
+        ),
       ),
+    );
+  }
+}
+
+/// Sprite map for the cyberpunk ronin. 28 rows × 22 cols.
+///   `.` empty       `K` hair (dark indigo)    `R` headband (red)
+///   `S` skin        `V` visor (glow strip)    `J` jacket main
+///   `T` jacket trim `D` jacket shadow         `M` belt buckle
+///   `P` pants       `B` boots
+const List<String> _avatarSprite = <String>[
+  '........KKKKKK........',
+  '.......KKKKKKKK.......',
+  '......KKKKKKKKKK......',
+  '.....KKKKKKKKKKKK.....',
+  '.....KRRRRRRRRRRK.....',
+  '.....KRRRRRRRRRRK.....',
+  '.....KKSSSSSSSSKK.....',
+  '.....KSSSSSSSSSSK.....',
+  '.....KSSVVSSVVSSK.....',
+  '.....KSSVVSSVVSSK.....',
+  '.....KSSSSSSSSSSK.....',
+  '.....KKSSSSSSSSKK.....',
+  '......KSSSSSSSSK......',
+  '........KSSSSK........',
+  '.....TTTTTTTTTTTT.....',
+  '....TJJJJJJJJJJJJT....',
+  '....TJJJJDDDDJJJJT....',
+  '....TJJJJDDDDJJJJT....',
+  '...TJJJJJJDDJJJJJJT...',
+  '...TJJJJJJJJJJJJJJT...',
+  '....TJJTTTTTTTTJJT....',
+  '....TJJMMMMMMMMJJT....',
+  '.....JJJJJJJJJJJJ.....',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......PPPP..PPPP......',
+  '......BBBB..BBBB......',
+];
+
+class _PixelAvatarPainter extends CustomPainter {
+  final String seed;
+  final Color primary;
+  final Color accent;
+  final double t; // 0..1
+
+  _PixelAvatarPainter({
+    required this.seed,
+    required this.primary,
+    required this.accent,
+    required this.t,
+  });
+
+  // Fixed (non palette-driven) sprite colors. These give the ronin a
+  // consistent identity across time-of-day palette shifts, while the
+  // jacket/trim continue to pick up the primary/accent.
+  static const _hair    = Color(0xFF15102E);
+  static const _hairLit = Color(0xFF2A1F55);
+  static const _band    = Color(0xFFE5364C);
+  static const _bandLit = Color(0xFFFF6A7C);
+  static const _skin    = Color(0xFFE8B89B);
+  static const _skinLit = Color(0xFFF5D4BC);
+  static const _pants   = Color(0xFF2A1F40);
+  static const _boots   = Color(0xFF120A22);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rows = _avatarSprite.length;
+    final cols = _avatarSprite.first.length;
+    final cell = math.min(size.width / cols, size.height / rows);
+    final dxBase = (size.width  - cell * cols) / 2;
+    final dyBase = (size.height - cell * rows) / 2;
+
+    // Walking back-and-forth across the canvas, 1 round-trip per cycle.
+    final walkX = math.sin(t * 2 * math.pi) * size.width * 0.10;
+
+    // 4 steps per cycle. Each step lifts one leg, alternating.
+    final stepIdx = (t * 4).floor() % 2;     // 0 or 1 — which leg is up
+    final stepProgress = (t * 4) % 1;        // 0..1 within the current step
+    final stepCurve = math.sin(stepProgress * math.pi); // 0 → 1 → 0 over the step
+    final legLift = stepCurve * cell * 0.55; // foot lifts off the ground
+    final bodyBob = -stepCurve * cell * 0.20; // body rises mid-step
+
+    // Visor glow pulses through the cycle.
+    final breath = math.sin(t * 2 * math.pi);
+    final visorMix = (breath + 1) / 2;
+    final visor = Color.lerp(accent, const Color(0xFFFFFFFF), 0.4 * visorMix)!;
+
+    // Hair tips drift slightly with motion.
+    final sway = math.sin(t * 2 * math.pi) * 1.2;
+
+    final jacketMain   = Paint()..color = primary;
+    final jacketTrim   = Paint()..color = accent;
+    final jacketShadow = Paint()..color = _shade(primary, 0.55);
+    final buckle       = Paint()..color = Color.lerp(accent, const Color(0xFFFFFFFF), 0.25)!;
+
+    for (int y = 0; y < rows; y++) {
+      final line = _avatarSprite[y];
+      for (int x = 0; x < cols; x++) {
+        final c = line[x];
+        if (c == '.') continue;
+
+        Paint paint;
+        double localDy = bodyBob;
+        double localDx = walkX;
+
+        switch (c) {
+          case 'K':
+            paint = (x >= cols / 2)
+                ? (Paint()..color = _hairLit)
+                : (Paint()..color = _hair);
+            if (y < 3) {
+              localDx += sway;
+            }
+            break;
+          case 'R':
+            paint = (x == cols / 2 - 1 || x == cols / 2)
+                ? (Paint()..color = _bandLit)
+                : (Paint()..color = _band);
+            break;
+          case 'S':
+            paint = (x > cols / 2)
+                ? (Paint()..color = _skinLit)
+                : (Paint()..color = _skin);
+            break;
+          case 'V':
+            paint = Paint()..color = visor;
+            break;
+          case 'J':
+            paint = jacketMain;
+            break;
+          case 'T':
+            paint = jacketTrim;
+            break;
+          case 'D':
+            paint = jacketShadow;
+            break;
+          case 'M':
+            paint = buckle;
+            break;
+          case 'P':
+          case 'B':
+            // Identify viewer-left vs viewer-right leg, then lift whichever
+            // one is currently mid-stride. Planted leg keeps both feet on
+            // the ground (no bob, no lift) — sells the heel-strike.
+            final isLeftLeg = x < cols / 2;
+            final liftedIsLeft = stepIdx == 0;
+            final amILifted = isLeftLeg == liftedIsLeft;
+            localDy = amILifted ? (bodyBob - legLift) : 0;
+            paint = Paint()..color = c == 'P' ? _pants : _boots;
+            break;
+          default:
+            paint = jacketMain;
+        }
+
+        canvas.drawRect(
+          Rect.fromLTWH(
+            dxBase + x * cell + localDx,
+            dyBase + y * cell + localDy,
+            cell + 0.5,
+            cell + 0.5,
+          ),
+          paint,
+        );
+      }
+    }
+  }
+
+  /// Darken a color toward black by `amount` (0..1).
+  static Color _shade(Color c, double amount) {
+    final r = (c.r * 255.0 * amount).round().clamp(0, 255);
+    final g = (c.g * 255.0 * amount).round().clamp(0, 255);
+    final b = (c.b * 255.0 * amount).round().clamp(0, 255);
+    return Color.fromARGB(255, r, g, b);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PixelAvatarPainter oldDelegate) =>
+      oldDelegate.seed != seed ||
+      oldDelegate.primary != primary ||
+      oldDelegate.accent != accent ||
+      oldDelegate.t != t;
+}
+
+/// Synthwave scene behind the ronin: gradient sky, retro sun with
+/// horizontal stripe cutouts, neon horizon, perspective grid floor that
+/// scrolls toward the viewer.
+class _SceneBackgroundPainter extends CustomPainter {
+  final Color primary;
+  final Color accent;
+  final Color bg;
+  final double t; // 0..1, loops
+
+  _SceneBackgroundPainter({
+    required this.primary,
+    required this.accent,
+    required this.bg,
+    required this.t,
+  });
+
+  static const _skyTop = Color(0xFF0B0420);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final horizonY = h * 0.72;
+    final floorH = h - horizonY;
+
+    // ---------- sky ----------
+    final skyRect = Rect.fromLTWH(0, 0, w, horizonY);
+    final skyBottom = _shade(primary, 0.30);
+    canvas.drawRect(
+      skyRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_skyTop, skyBottom],
+        ).createShader(skyRect),
+    );
+
+    // ---------- stars ----------
+    // Deterministic constellation — looks intentional, twinkles independently.
+    const stars = <List<double>>[
+      [0.08, 0.10], [0.18, 0.22], [0.28, 0.06], [0.40, 0.16],
+      [0.55, 0.09], [0.70, 0.20], [0.82, 0.08], [0.92, 0.30],
+      [0.12, 0.40], [0.36, 0.48], [0.68, 0.42], [0.88, 0.52],
+    ];
+    final starPaint = Paint();
+    for (int i = 0; i < stars.length; i++) {
+      final s = stars[i];
+      final twinkle = (math.sin(t * 2 * math.pi + i * 0.9) + 1) / 2; // 0..1
+      starPaint.color = const Color(0xFFFFFFFF)
+          .withValues(alpha: 0.25 + 0.55 * twinkle);
+      canvas.drawCircle(
+        Offset(s[0] * w, s[1] * horizonY),
+        0.8 + 0.6 * twinkle,
+        starPaint,
+      );
+    }
+
+    // ---------- retro sun (half-sun rising at horizon) ----------
+    // Anchored on the horizon so the bottom half is clipped by the floor —
+    // gives you the iconic half-circle. Sized off the smaller dimension so
+    // it stays a recognizable circle on both narrow and wide screens.
+    final sunCenter = Offset(w * 0.5, horizonY);
+    final sunR = math.min(w, h) * 0.38;
+    final sunRect = Rect.fromCircle(center: sunCenter, radius: sunR);
+    canvas.save();
+    canvas.clipRect(Rect.fromLTWH(0, 0, w, horizonY));
+    canvas.drawCircle(
+      sunCenter,
+      sunR,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(accent, const Color(0xFFFFE4B0), 0.55)!,
+            primary,
+            _shade(primary, 0.55),
+          ],
+        ).createShader(sunRect),
+    );
+    canvas.restore();
+
+    // ---------- horizon line + glow ----------
+    canvas.drawRect(
+      Rect.fromLTWH(0, horizonY - 4, w, 5),
+      Paint()..color = accent.withValues(alpha: 0.18),
+    );
+    canvas.drawLine(
+      Offset(0, horizonY),
+      Offset(w, horizonY),
+      Paint()
+        ..color = accent
+        ..strokeWidth = 1.5,
+    );
+
+    // ---------- flat floor ----------
+    // Smooth dark gradient below the horizon — no lines, no patterns. Lets
+    // the ronin and sun carry the scene.
+    final floorRect = Rect.fromLTWH(0, horizonY, w, floorH);
+    canvas.drawRect(
+      floorRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            _shade(primary, 0.18),
+            _shade(primary, 0.06),
+          ],
+        ).createShader(floorRect),
+    );
+  }
+
+  static Color _shade(Color c, double amount) {
+    final r = (c.r * 255.0 * amount).round().clamp(0, 255);
+    final g = (c.g * 255.0 * amount).round().clamp(0, 255);
+    final b = (c.b * 255.0 * amount).round().clamp(0, 255);
+    return Color.fromARGB(255, r, g, b);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SceneBackgroundPainter old) =>
+      old.t != t ||
+      old.primary != primary ||
+      old.accent != accent ||
+      old.bg != bg;
+}
+
+class _XpBar extends StatelessWidget {
+  final int earned;
+  final int goal;
+  final double progress;
+  final VoidCallback? onTap;
+  const _XpBar({
+    required this.earned,
+    required this.goal,
+    required this.progress,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    final bar = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(quest.title.toUpperCase(),
-                    style: _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
-              ),
-              Text('+${quest.xpReward} XP', style: _mono(fillColor, size: 11)),
+              Text('DAILY XP', style: _mono(p.textMuted, size: 10)),
+              const Spacer(),
+              Text('$earned / $goal',
+                  style: _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Container(
-            height: 8,
+            height: 18,
             decoration: BoxDecoration(
-              color: p.background,
-              border: Border.all(color: p.textMuted.withValues(alpha: 0.3)),
+              color: p.surface,
+              border: Border.all(color: p.primary, width: 2),
             ),
             child: LayoutBuilder(
-              builder: (ctx, c) => Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: c.maxWidth * quest.progress,
-                  color: fillColor,
-                ),
+              builder: (ctx, c) => Stack(
+                children: [
+                  Container(
+                    width: c.maxWidth * progress,
+                    decoration: BoxDecoration(
+                      color: p.primary,
+                      boxShadow: [
+                        BoxShadow(color: p.primary, blurRadius: 8),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: List.generate(
+                      10,
+                      (_) => Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              right: BorderSide(
+                                color: p.background.withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            '${quest.current} / ${quest.target}  •  ${quest.metric}',
-            style: _mono(p.textMuted, size: 10),
+        ],
+      ),
+    );
+    if (onTap == null) return bar;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: bar,
+    );
+  }
+}
+
+class _XpBreakdownSheet extends StatelessWidget {
+  final int earned;
+  final int goal;
+  final List<XpGain> items;
+  const _XpBreakdownSheet({
+    required this.earned,
+    required this.goal,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+            decoration: BoxDecoration(
+              color: p.surface,
+              border: Border.all(color: p.primary, width: 2),
+              boxShadow: [
+                BoxShadow(color: p.primary.withValues(alpha: 0.35), blurRadius: 18),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('TODAY · XP EARNED', style: _mono(p.textMuted, size: 10)),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('$earned',
+                        style: _mono(p.primary, size: 32, w: FontWeight.w900)),
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text('/ $goal XP',
+                          style: _mono(p.textMuted, size: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 22),
+          const _ProfileSectionLabel(label: 'Sources'),
+          const SizedBox(height: 6),
+          for (final item in items) _XpGainRow(item: item),
         ],
       ),
     );
   }
 }
 
-class _BossFightCard extends StatelessWidget {
-  final BossFight boss;
-  const _BossFightCard({required this.boss});
+class _XpGainRow extends StatelessWidget {
+  final XpGain item;
+  const _XpGainRow({required this.item});
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
+    final (tag, stripe) = switch (item.source) {
+      XpSource.quest    => ('QUEST',    p.primary),
+      XpSource.crit     => ('CRIT',     p.accent),
+      XpSource.activity => ('ACTIVITY', p.textMuted),
+    };
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
         color: p.surface,
-        border: Border.all(color: p.accent, width: 2),
-        boxShadow: [BoxShadow(color: p.accent.withValues(alpha: 0.3), blurRadius: 12)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('BOSS', style: _mono(p.accent, size: 10)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  boss.name.toUpperCase(),
-                  style: _mono(p.textPrimary, size: 14, w: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(boss.objective, style: _mono(p.textMuted, size: 11)),
-          const SizedBox(height: 10),
-          Container(
-            height: 14,
-            decoration: BoxDecoration(
-              color: p.background,
-              border: Border.all(color: p.accent.withValues(alpha: 0.4)),
-            ),
-            child: LayoutBuilder(
-              builder: (ctx, c) => Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: c.maxWidth * boss.fraction,
-                  color: p.accent,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${boss.progress} / ${boss.target}  •  ends ${boss.endsAt.split('T').first}',
-            style: _mono(p.textMuted, size: 10),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BuffPill extends StatelessWidget {
-  final Buff buff;
-  const _BuffPill({required this.buff});
-
-  @override
-  Widget build(BuildContext context) {
-    final p = SkinScope.of(context).palette;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: p.surface,
-        border: Border.all(color: p.primary.withValues(alpha: 0.6)),
+        border: Border(left: BorderSide(color: stripe, width: 3)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(width: 8, height: 8, color: p.primary),
-          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(buff.name.toUpperCase(),
-                    style: _mono(p.textPrimary, size: 11, w: FontWeight.w800)),
-                Text(buff.description, style: _mono(p.textMuted, size: 10)),
+                Text(tag, style: _mono(stripe, size: 9, w: FontWeight.w800)),
+                const SizedBox(height: 3),
+                Text(item.label.toUpperCase(),
+                    style: _mono(p.textPrimary, size: 12, w: FontWeight.w700)),
               ],
             ),
+          ),
+          const SizedBox(width: 8),
+          Text('+${item.xp} XP',
+              style: _mono(stripe, size: 13, w: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuestPickerTile extends StatelessWidget {
+  final Quest quest;
+  final bool isActive;
+  final bool canActivate;
+  final VoidCallback onTap;
+  const _QuestPickerTile({
+    required this.quest,
+    required this.isActive,
+    required this.canActivate,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    final enabled = isActive || canActivate;
+    final borderColor = isActive ? p.primary : (enabled ? p.accent : p.textMuted);
+    final actionLabel = isActive ? 'REMOVE' : (enabled ? 'ADD' : 'LOCKED');
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: GestureDetector(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: p.surface,
+            border: Border.all(color: borderColor, width: 2),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(quest.title.toUpperCase(),
+                        style:
+                            _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${quest.current} / ${quest.target} ${quest.metric}',
+                      style: _mono(p.textMuted, size: 10),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('+${quest.xpReward} XP',
+                      style: _mono(borderColor, size: 11, w: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Text(actionLabel,
+                        style: _mono(borderColor, size: 9)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ClanRow extends StatelessWidget {
+  final int rank;
+  final Clan clan;
+  final VoidCallback onTap;
+  const _ClanRow({required this.rank, required this.clan, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    final isTop = rank == 1;
+    final accentColor = isTop ? p.primary : p.accent;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: p.surface,
+          border: Border.all(color: accentColor, width: 2),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 32,
+              child: Text('#$rank',
+                  style: _mono(accentColor, size: 14, w: FontWeight.w900)),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(clan.name.toUpperCase(),
+                      style:
+                          _mono(p.textPrimary, size: 14, w: FontWeight.w800)),
+                  const SizedBox(height: 2),
+                  Text(
+                    '[${clan.tag}]  •  ${clan.memberCount} members',
+                    style: _mono(p.textMuted, size: 10),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('${clan.totalTrophies}',
+                    style: _mono(accentColor, size: 16, w: FontWeight.w900)),
+                Text('TROPHIES', style: _mono(p.textMuted, size: 9)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClanDetailHeader extends StatelessWidget {
+  final Clan clan;
+  const _ClanDetailHeader({required this.clan});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = SkinScope.of(context).palette;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: p.surface,
+        border: Border.all(color: p.primary, width: 2),
+        boxShadow: [
+          BoxShadow(color: p.primary.withValues(alpha: 0.35), blurRadius: 18),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(clan.name.toUpperCase(),
+              style: _mono(p.textPrimary, size: 22, w: FontWeight.w900)),
+          const SizedBox(height: 4),
+          Text('[${clan.tag}]  •  ${clan.memberCount} MEMBERS',
+              style: _mono(p.textMuted, size: 11)),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('${clan.totalTrophies}',
+                  style: _mono(p.primary, size: 30, w: FontWeight.w900)),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text('TOTAL TROPHIES',
+                    style: _mono(p.textMuted, size: 11)),
+              ),
+            ],
           ),
         ],
       ),
@@ -381,48 +1219,44 @@ class _BuffPill extends StatelessWidget {
   }
 }
 
-class _ChestTile extends StatelessWidget {
-  final Chest chest;
-  const _ChestTile({required this.chest});
+class _MemberRow extends StatelessWidget {
+  final int rank;
+  final ClanMember member;
+  final bool isCurrentUser;
+  const _MemberRow({
+    required this.rank,
+    required this.member,
+    required this.isCurrentUser,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    final rarityColor = switch (chest.rarity) {
-      'rare' => p.accent,
-      'epic' => p.primary,
-      _ => p.textMuted,
-    };
-    final statusLabel = switch (chest.status) {
-      ChestStatus.unlocking => 'UNLOCKING',
-      ChestStatus.ready => 'READY',
-      ChestStatus.pending => 'LOCKED',
-    };
+    final highlight = isCurrentUser ? p.primary : p.textMuted;
     return Container(
-      width: 96,
-      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: p.surface,
-        border: Border.all(color: rarityColor, width: 2),
+        color: isCurrentUser
+            ? p.primary.withValues(alpha: 0.12)
+            : p.surface.withValues(alpha: 0.7),
+        border: Border.all(
+          color: isCurrentUser ? p.primary : p.textMuted.withValues(alpha: 0.3),
+        ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 40,
-            decoration: BoxDecoration(
-              color: rarityColor.withValues(alpha: 0.15),
-              border: Border.all(color: rarityColor),
-            ),
-            child: Center(
-              child: Text(
-                chest.rarity.substring(0, 1).toUpperCase(),
-                style: _mono(rarityColor, size: 22, w: FontWeight.w900),
-              ),
-            ),
+          SizedBox(
+            width: 32,
+            child: Text('#$rank',
+                style: _mono(highlight, size: 12, w: FontWeight.w800)),
           ),
-          const SizedBox(height: 8),
-          Text(statusLabel, style: _mono(p.textPrimary, size: 9)),
+          Expanded(
+            child: Text(member.name.toUpperCase(),
+                style: _mono(p.textPrimary, size: 13, w: FontWeight.w700)),
+          ),
+          Text('${member.trophies}',
+              style: _mono(highlight, size: 13, w: FontWeight.w800)),
         ],
       ),
     );

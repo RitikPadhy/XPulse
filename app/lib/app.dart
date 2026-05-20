@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/home_screen.dart';
+import 'screens/app_shell.dart';
 import 'ui/contracts/component_library.dart';
 import 'ui/contracts/skin_scope.dart';
 import 'ui/skins/pixel_cyberpunk/pixel_cyberpunk_skin.dart';
@@ -14,22 +14,17 @@ class XPulseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final band = bandFor(DateTime.now());
-    final palette = paletteFor(band);
-
     return MaterialApp(
       title: 'XPulse',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: palette.background,
-        textTheme: const TextTheme(),
+        scaffoldBackgroundColor: appPalette.background,
       ),
       home: SkinScope(
         components: skin,
-        palette: palette,
-        band: band,
-        child: const HomeScreen(),
+        palette: appPalette,
+        child: const AppShell(),
       ),
     );
   }
