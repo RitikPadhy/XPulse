@@ -14,20 +14,16 @@ class XPulseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final band = bandFor(DateTime.now());
-    final palette = paletteFor(band);
-
     return MaterialApp(
       title: 'XPulse',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: palette.background,
+        scaffoldBackgroundColor: appPalette.background,
       ),
       home: SkinScope(
         components: skin,
-        palette: palette,
-        band: band,
+        palette: appPalette,
         child: const AppShell(),
       ),
     );
