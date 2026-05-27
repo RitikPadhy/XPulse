@@ -31,4 +31,6 @@ jobs:
             .venv/bin/pip install --quiet -r requirements.txt
             sudo /bin/systemctl restart xpulse
             sleep 2
-            curl -fsS http://127.0.0.1:8000/health
+
+      - name: Verify public health endpoint
+        run: curl -fsS --retry 5 --retry-delay 2 "${{ secrets.OCI_BACKEND_URL }}/health"
