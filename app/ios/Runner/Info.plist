@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>XPulse reads your activity, vitals, and body metrics from HealthKit so your character can level up from real workouts.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>XPulse does not write to HealthKit. (Required by iOS.)</string>
 </dict>
 </plist>

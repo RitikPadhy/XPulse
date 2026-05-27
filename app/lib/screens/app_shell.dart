@@ -4,6 +4,7 @@ import '../core/app_state.dart';
 import '../core/models/user_snapshot.dart';
 import '../core/repositories/user_repository.dart';
 import '../ui/contracts/skin_scope.dart';
+import 'health_setup_screen.dart';
 import 'home_screen.dart';
 import 'leaderboard_screen.dart';
 import 'side_quests_screen.dart';
@@ -63,6 +64,7 @@ class _AppShellState extends State<AppShell> {
                     SideQuestsScreen(),
                     HomeScreen(),
                     LeaderboardScreen(),
+                    HealthSetupScreen(),
                   ],
                 ),
               );
