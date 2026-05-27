@@ -48,6 +48,7 @@ After=network.target
 [Service]
 User=${SERVICE_USER}
 WorkingDirectory=${BACKEND_DIR}
+EnvironmentFile=-/etc/xpulse.env
 ExecStart=${VENV_DIR}/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=3

@@ -34,3 +34,6 @@ jobs:
 
       - name: Verify public health endpoint
         run: curl -fsS --retry 5 --retry-delay 2 "${{ secrets.OCI_BACKEND_URL }}/health"
+
+      - name: Verify database connectivity
+        run: curl -fsS --retry 5 --retry-delay 2 "${{ secrets.OCI_BACKEND_URL }}/health/db"
