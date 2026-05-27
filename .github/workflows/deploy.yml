@@ -11,6 +11,7 @@ on:
 
 jobs:
   deploy:
+    if: github.repository == 'Unexplo/XPulse'
     runs-on: ubuntu-latest
     steps:
       - name: SSH into Oracle VM and deploy
