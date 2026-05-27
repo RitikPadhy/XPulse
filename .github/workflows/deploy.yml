@@ -1,0 +1,39 @@
+name: Deploy backend to Oracle VM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.repository == 'Unexplo/XPulse'
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into Oracle VM and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/xpulse/app
+            git fetch --all
+            git reset --hard origin/main
+            cd backend
+            .venv/bin/pip install --quiet -r requirements.txt
+            sudo /bin/systemctl restart xpulse
+            sleep 2
+
+      - name: Verify public health endpoint
+        run: curl -fsS --retry 5 --retry-delay 2 "${{ secrets.OCI_BACKEND_URL }}/health"
+
+      - name: Verify database connectivity
+        run: curl -fsS --retry 5 --retry-delay 2 "${{ secrets.OCI_BACKEND_URL }}/health/db"

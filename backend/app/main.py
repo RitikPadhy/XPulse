@@ -1,34 +1,18 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
-from app.api import samples, system
-from app.config import get_settings
-from app.db import Base, engine
+from app.db import engine
 
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine)
-    yield
+app = FastAPI(title="XPulse Backend", version="0.0.1")
 
 
-def create_app() -> FastAPI:
-    settings = get_settings()
-    app = FastAPI(title="XPulse Backend", version="0.1.0", lifespan=lifespan)
-
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origin_list,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    app.include_router(system.router)
-    app.include_router(samples.router)
-    return app
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
 
 
-app = create_app()
+@app.get("/health/db")
+def health_db() -> dict[str, str]:
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+    return {"status": "ok"}
