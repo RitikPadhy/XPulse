@@ -1,0 +1,33 @@
+name: Deploy backend to Oracle VM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into Oracle VM and deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -e
+            cd /opt/xpulse/app
+            git fetch --all
+            git reset --hard origin/main
+            cd backend
+            .venv/bin/pip install --quiet -r requirements.txt
+            sudo /bin/systemctl restart xpulse
+            sleep 2
+            curl -fsS http://127.0.0.1:8000/health
