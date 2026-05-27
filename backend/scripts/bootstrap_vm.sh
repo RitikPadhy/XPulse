@@ -3,13 +3,13 @@
 # Idempotent — safe to re-run.
 #
 # Usage on the VM (as the `opc` user):
-#   curl -fsSL https://raw.githubusercontent.com/RitikPadhy/XPulse/main/backend/scripts/bootstrap_vm.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Unexplo/XPulse/main/backend/scripts/bootstrap_vm.sh | bash
 # or:
 #   scp backend/scripts/bootstrap_vm.sh opc@<vm-ip>:~ && ssh opc@<vm-ip> bash ~/bootstrap_vm.sh
 
 set -euo pipefail
 
-REPO_URL="https://github.com/RitikPadhy/XPulse.git"
+REPO_URL="https://github.com/Unexplo/XPulse.git"
 APP_DIR="/opt/xpulse/app"
 BACKEND_DIR="${APP_DIR}/backend"
 VENV_DIR="${BACKEND_DIR}/.venv"
