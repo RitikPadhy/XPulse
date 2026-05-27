@@ -1,17 +1,32 @@
-import os
+from collections.abc import Generator
 
-from sqlalchemy import URL, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-
-def _build_url() -> URL:
-    return URL.create(
-        drivername="postgresql+psycopg",
-        username=os.environ["PGUSER"],
-        password=os.environ["PGPASSWORD"],
-        host=os.environ.get("PGHOST", "127.0.0.1"),
-        port=int(os.environ.get("PGPORT", "5432")),
-        database=os.environ["PGDATABASE"],
-    )
+from app.config import get_settings
 
 
-engine = create_engine(_build_url(), pool_pre_ping=True)
+class Base(DeclarativeBase):
+    pass
+
+
+settings = get_settings()
+
+_connect_args = (
+    {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
+)
+engine = create_engine(
+    settings.database_url,
+    connect_args=_connect_args,
+    pool_pre_ping=True,
+    future=True,
+)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
