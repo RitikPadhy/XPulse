@@ -77,6 +77,12 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
     }
   }
 
+  Future<void> _resetSyncState() async {
+    await _storage.resetSyncState();
+    setState(() => _status = 'sync state cleared — next sync will refetch last 24h');
+    await _refresh();
+  }
+
   Future<void> _syncNow() async {
     setState(() {
       _busy = true;
@@ -149,6 +155,11 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
               ElevatedButton(
                 onPressed: _busy ? null : _syncNow,
                 child: const Text('Sync now'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _busy ? null : _resetSyncState,
+                child: const Text('Reset sync state (refetch last 24h)'),
               ),
               const SizedBox(height: 24),
               Text(_status, style: const TextStyle(fontFamily: 'Courier')),

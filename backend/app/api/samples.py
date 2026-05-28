@@ -32,11 +32,11 @@ def ingest(
         .on_conflict_do_nothing(
             index_elements=["user_id", "type", "start_date", "end_date"]
         )
+        .returning(HealthSample.id)
     )
-    result = db.execute(stmt)
+    inserted = len(db.execute(stmt).scalars().all())
     db.commit()
 
-    inserted = result.rowcount or 0
     return IngestResponse(
         received=received,
         inserted=inserted,

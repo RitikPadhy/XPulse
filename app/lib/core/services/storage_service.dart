@@ -57,4 +57,13 @@ class StorageService {
       await prefs.setString(_queueKey, jsonEncode(samples));
     }
   }
+
+  /// Wipes the sync anchor and any queued samples. Next sync will re-query
+  /// the default look-back window (24h) from HealthKit. The API token is
+  /// preserved.
+  Future<void> resetSyncState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_lastSyncKey);
+    await prefs.remove(_queueKey);
+  }
 }
