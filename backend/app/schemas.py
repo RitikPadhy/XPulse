@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class HealthSampleIn(BaseModel):
@@ -81,3 +81,109 @@ class IngestResponse(BaseModel):
 class HealthStatus(BaseModel):
     status: str
     env: str
+
+
+class UserDetailsOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    email: str | None = None
+    phone: str | None = None
+    display_name: str | None = None
+    date_of_birth: date | None = None
+    biological_sex: str | None = None
+    height_cm: float | None = None
+    weight_kg: float | None = None
+    timezone: str | None = None
+    locale: str | None = None
+    country: str | None = None
+    avatar_key: str | None = None
+    bio: str | None = None
+    onboarded_at: datetime | None = None
+    last_active_at: datetime | None = None
+    ios_app_version: str | None = None
+    ios_device_model: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserDetailsUpdate(BaseModel):
+    """All fields optional — PATCH semantics. Unset fields are not touched."""
+
+    email: EmailStr | None = None
+    phone: str | None = None
+    display_name: str | None = None
+    date_of_birth: date | None = None
+    biological_sex: str | None = Field(
+        default=None,
+        pattern="^(male|female|other|not_set)$",
+    )
+    height_cm: float | None = Field(default=None, ge=0, le=300)
+    weight_kg: float | None = Field(default=None, ge=0, le=500)
+    timezone: str | None = None
+    locale: str | None = None
+    country: str | None = Field(default=None, min_length=2, max_length=2)
+    avatar_key: str | None = None
+    bio: str | None = None
+    ios_app_version: str | None = None
+    ios_device_model: str | None = None
+
+
+class MeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    role: str
+    created_at: datetime
+    details: UserDetailsOut | None = None
+
+
+class FriendSummary(BaseModel):
+    """One row in the friends leaderboard."""
+
+    id: int
+    display_name: str
+    avatar_key: str | None = None
+    country: str | None = None
+    daily_xp: int
+    total_xp: int
+    rank: int
+
+
+class DailyXp(BaseModel):
+    day: date
+    xp: int
+
+
+class UserPublicOut(BaseModel):
+    """A friend's profile as seen by anyone in the leaderboard."""
+
+    id: int
+    display_name: str
+    avatar_key: str | None = None
+    country: str | None = None
+    bio: str | None = None
+    joined_at: datetime
+    daily_xp: int
+    total_xp: int
+    rank: int | None = None
+    last_7_days: list[DailyXp] = []
+
+
+class SnapshotOut(BaseModel):
+    """One-shot payload for the three main pages.
+
+    `me` + `friends` come from real DB data. The gamification sections
+    (`today`, `baselines`, `quests`, `dojo`, `chests`) are server-side
+    stubs for now; the iOS app reads them via the same fields it already
+    parses from sample_user.json, so the contract is stable while the
+    real logic gets built behind it.
+    """
+
+    me: MeOut
+    friends: list[FriendSummary]
+    today: dict[str, Any] | None = None
+    baselines: dict[str, Any] | None = None
+    quests: dict[str, Any] | None = None
+    dojo: dict[str, Any] | None = None
+    chests: list[dict[str, Any]] | None = None

@@ -41,6 +41,12 @@ class User(Base):
     samples: Mapped[list["HealthSample"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    xp_days: Mapped[list["UserXpDaily"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    quests: Mapped[list["UserQuest"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class UserDetail(Base):
@@ -151,3 +157,72 @@ class HealthSample(Base):
     )
 
     user: Mapped[User] = relationship(back_populates="samples")
+
+
+class UserXpDaily(Base):
+    """Per-day XP ledger. One row per (user, day). Daily XP = today's row,
+    total XP = SUM across all rows. Friends leaderboard ranks by total."""
+
+    __tablename__ = "user_xp_daily"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    xp: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    user: Mapped[User] = relationship(back_populates="xp_days")
+
+
+class QuestCatalog(Base):
+    """Definition table: every (metric, tier, duration) quest the system knows
+    about, with its XP reward and the stretch factor used to compute a
+    user-specific target from their 7-day baseline."""
+
+    __tablename__ = "quest_catalog"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    metric: Mapped[str] = mapped_column(String(32), nullable=False)
+    tier: Mapped[str] = mapped_column(String(16), nullable=False)
+    duration: Mapped[str] = mapped_column(String(16), nullable=False)
+    stretch_factor: Mapped[float] = mapped_column(Float, nullable=False)
+    xp_reward: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class UserQuest(Base):
+    """A single quest assignment for a user. The user has a "pool" of these:
+    `slot='active'` rows are the 4 the user is currently grinding;
+    `slot='available'` rows are the alternatives they can swap to."""
+
+    __tablename__ = "user_quests"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    catalog_id: Mapped[int] = mapped_column(
+        ForeignKey("quest_catalog.id"), nullable=False
+    )
+
+    slot: Mapped[str] = mapped_column(String(16), nullable=False)            # 'active' | 'available'
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="inProgress")
+    target_value: Mapped[float] = mapped_column(Float, nullable=False)
+    progress_value: Mapped[float] = mapped_column(Float, nullable=False, default=0)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    assigned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped[User] = relationship(back_populates="quests")
+    catalog: Mapped[QuestCatalog] = relationship()
