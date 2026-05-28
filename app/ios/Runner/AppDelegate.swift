@@ -8,6 +8,12 @@ import HealthKit
   private var channel: FlutterMethodChannel?
   private var observerQueries: [HKObserverQuery] = []
 
+  /// A live copy of LaunchScreen.storyboard kept on top of the Flutter view so
+  /// the launch screen stays visible through the engine-warmup gap AND the
+  /// initial data load — no white flash, no second splash. Dart removes it via
+  /// the "xpulse/splash" channel once it's ready to show Home/Auth.
+  private var splashOverlay: UIView?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -37,9 +43,48 @@ import HealthKit
           result(FlutterMethodNotImplemented)
         }
       }
+
+      installSplashOverlay(over: controller)
+
+      let splashChannel = FlutterMethodChannel(
+        name: "xpulse/splash",
+        binaryMessenger: controller.binaryMessenger
+      )
+      splashChannel.setMethodCallHandler { [weak self] call, result in
+        if call.method == "remove" {
+          self?.removeSplashOverlay()
+          result(true)
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  /// Adds the launch storyboard's view on top of the Flutter view, so what the
+  /// user saw at launch keeps showing seamlessly until Dart calls "remove".
+  private func installSplashOverlay(over controller: FlutterViewController) {
+    guard let splashVC = UIStoryboard(name: "LaunchScreen", bundle: nil)
+      .instantiateInitialViewController(),
+      let splashView = splashVC.view else { return }
+    splashView.frame = controller.view.bounds
+    splashView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    controller.view.addSubview(splashView)
+    splashView.setNeedsLayout()
+    splashView.layoutIfNeeded()
+    splashOverlay = splashView
+  }
+
+  private func removeSplashOverlay() {
+    guard let overlay = splashOverlay else { return }
+    splashOverlay = nil
+    UIView.animate(
+      withDuration: 0.25,
+      animations: { overlay.alpha = 0 },
+      completion: { _ in overlay.removeFromSuperview() }
+    )
   }
 
   private func startObservers() {
