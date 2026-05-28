@@ -1,10 +1,9 @@
 """One snapshot endpoint that powers all three pages in the app, plus a
 per-user public profile endpoint for the friend-detail screen.
 
-Real fields (`me`, `friends`) come from the DB. The gamification sections
-(today/baselines/quests/dojo/chests) are stubs for now — same shape the
-iOS app already parses, so the API contract stays stable while we build
-the real logic behind it.
+`me`, `friends`, and `quests` come from real DB data. `today` is a
+server-computed default for now — XP totals + an empty metric map; the
+breakdown fills in as the gamification logic gets wired up.
 """
 
 from datetime import date, datetime, timedelta, timezone
@@ -72,29 +71,19 @@ def _stub_today() -> dict[str, Any]:
     """Default `today` block — matches sample_user.json shape so the
     existing UserSnapshot.fromJson parser is happy."""
     return {
-        "xpEarned": 0,
-        "xpGoal": 1000,
-        "criticalStrikes": 0,
-        "steps": 0,
-        "activeMinutes": 0,
+        "date": _today().isoformat(),
+        "metrics": {},
+        "xp": {
+            "earned": 0,
+            "dailyGoal": 1000,
+            "criticalStrikes": 0,
+        },
     }
 
 
-def _stub_baselines() -> dict[str, Any]:
-    return {"steps": 8000, "activeMinutes": 30}
-
-
 def _empty_quests() -> dict[str, Any]:
-    """Returned when a user has no health data yet — no baselines = no quests."""
+    """Returned when a user has no health samples yet — nothing to compute a baseline from."""
     return {"activeIds": [], "pool": []}
-
-
-def _stub_dojo() -> dict[str, Any]:
-    return {"tier": "Bronze", "streakDays": 0}
-
-
-def _stub_chests() -> list[dict[str, Any]]:
-    return []
 
 
 @router.get("/me/snapshot", response_model=SnapshotOut)
@@ -133,10 +122,7 @@ def get_snapshot(
         me=MeOut.model_validate(user),
         friends=friends,
         today=_stub_today(),
-        baselines=_stub_baselines(),
         quests=quests_block,
-        dojo=_stub_dojo(),
-        chests=_stub_chests(),
     )
 
 

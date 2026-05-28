@@ -262,13 +262,6 @@ class _ProfileSheet extends StatelessWidget {
           ),
           const SizedBox(height: 22),
 
-          const _ProfileSectionLabel(label: 'Dojo'),
-          const SizedBox(height: 4),
-          _DataRow(label: 'DOJO', value: snap.dojo.name.toUpperCase()),
-          _DataRow(label: 'SENSEI', value: snap.dojo.sensei.toUpperCase()),
-          _DataRow(label: 'MEMBERS', value: '${snap.dojo.memberCount}'),
-          const SizedBox(height: 22),
-
           const _ProfileSectionLabel(label: 'Record'),
           const SizedBox(height: 4),
           _DataRow(label: 'TROPHIES', value: '${user.trophies}'),

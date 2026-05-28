@@ -1,19 +1,13 @@
 class UserSnapshot {
   final UserProfile user;
   final TodayData today;
-  final Baselines baselines;
   final QuestBook quests;
-  final Dojo dojo;
-  final List<Chest> chests;
   final List<Clan> leaderboard;
 
   UserSnapshot({
     required this.user,
     required this.today,
-    required this.baselines,
     required this.quests,
-    required this.dojo,
-    required this.chests,
     required this.leaderboard,
   });
 
@@ -62,12 +56,7 @@ class UserSnapshot {
   factory UserSnapshot.fromJson(Map<String, dynamic> json) => UserSnapshot(
         user: UserProfile.fromJson(json['user'] as Map<String, dynamic>),
         today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
-        baselines: Baselines.fromJson(json['baselines'] as Map<String, dynamic>),
         quests: QuestBook.fromJson(json['quests'] as Map<String, dynamic>),
-        dojo: Dojo.fromJson(json['dojo'] as Map<String, dynamic>),
-        chests: (json['chests'] as List)
-            .map((e) => Chest.fromJson(e as Map<String, dynamic>))
-            .toList(),
         leaderboard: (json['leaderboard'] as List)
             .map((e) => Clan.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -135,21 +124,6 @@ class TodayData {
   }
 }
 
-class Baselines {
-  final String window;
-  final Map<String, num> averages;
-
-  Baselines({required this.window, required this.averages});
-
-  factory Baselines.fromJson(Map<String, dynamic> json) {
-    final averagesRaw = json['averages'] as Map<String, dynamic>;
-    return Baselines(
-      window: json['window'] as String,
-      averages: averagesRaw.map((k, v) => MapEntry(k, v as num)),
-    );
-  }
-}
-
 class QuestBook {
   final List<String> initialActiveIds;
   final List<Quest> pool;
@@ -207,115 +181,6 @@ class Quest {
             ? QuestStatus.complete
             : QuestStatus.inProgress,
       );
-}
-
-class Dojo {
-  final String id;
-  final String name;
-  final int memberCount;
-  final String sensei;
-  final BossFight weeklyBoss;
-  final List<Buff> activeBuffs;
-
-  Dojo({
-    required this.id,
-    required this.name,
-    required this.memberCount,
-    required this.sensei,
-    required this.weeklyBoss,
-    required this.activeBuffs,
-  });
-
-  factory Dojo.fromJson(Map<String, dynamic> json) => Dojo(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        memberCount: json['memberCount'] as int,
-        sensei: json['sensei'] as String,
-        weeklyBoss:
-            BossFight.fromJson(json['weeklyBoss'] as Map<String, dynamic>),
-        activeBuffs: (json['activeBuffs'] as List)
-            .map((e) => Buff.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
-}
-
-class BossFight {
-  final String name;
-  final String objective;
-  final num progress;
-  final num target;
-  final String endsAt;
-
-  BossFight({
-    required this.name,
-    required this.objective,
-    required this.progress,
-    required this.target,
-    required this.endsAt,
-  });
-
-  double get fraction =>
-      target == 0 ? 0 : (progress / target).clamp(0, 1).toDouble();
-
-  factory BossFight.fromJson(Map<String, dynamic> json) => BossFight(
-        name: json['name'] as String,
-        objective: json['objective'] as String,
-        progress: json['progress'] as num,
-        target: json['target'] as num,
-        endsAt: json['endsAt'] as String,
-      );
-}
-
-class Buff {
-  final String id;
-  final String name;
-  final String description;
-  final String expiresAt;
-
-  Buff({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.expiresAt,
-  });
-
-  factory Buff.fromJson(Map<String, dynamic> json) => Buff(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        description: json['description'] as String,
-        expiresAt: json['expiresAt'] as String,
-      );
-}
-
-enum ChestStatus { unlocking, pending, ready }
-
-class Chest {
-  final String id;
-  final String rarity;
-  final ChestStatus status;
-  final String? unlocksAt;
-
-  Chest({
-    required this.id,
-    required this.rarity,
-    required this.status,
-    this.unlocksAt,
-  });
-
-  factory Chest.fromJson(Map<String, dynamic> json) {
-    final raw = json['status'] as String;
-    final status = switch (raw) {
-      'unlocking' => ChestStatus.unlocking,
-      'ready' => ChestStatus.ready,
-      _ => ChestStatus.pending,
-    };
-    return Chest(
-      id: json['id'] as String,
-      rarity: json['rarity'] as String,
-      status: status,
-      unlocksAt: json['unlocksAt'] as String?,
-    );
-  }
 }
 
 class Clan {

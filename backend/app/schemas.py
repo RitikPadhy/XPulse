@@ -173,17 +173,12 @@ class UserPublicOut(BaseModel):
 class SnapshotOut(BaseModel):
     """One-shot payload for the three main pages.
 
-    `me` + `friends` come from real DB data. The gamification sections
-    (`today`, `baselines`, `quests`, `dojo`, `chests`) are server-side
-    stubs for now; the iOS app reads them via the same fields it already
-    parses from sample_user.json, so the contract is stable while the
-    real logic gets built behind it.
+    `me`, `friends`, and `quests` come from real DB data. `today` is a
+    server-computed default (XP earned today, daily goal, etc.) — the
+    metric breakdown will fill in as we wire the gamification side.
     """
 
     me: MeOut
     friends: list[FriendSummary]
     today: dict[str, Any] | None = None
-    baselines: dict[str, Any] | None = None
     quests: dict[str, Any] | None = None
-    dojo: dict[str, Any] | None = None
-    chests: list[dict[str, Any]] | None = None

@@ -23,16 +23,6 @@
       "criticalStrikes": 1
     }
   },
-  "baselines": {
-    "window": "30d",
-    "averages": {
-      "steps": 7800,
-      "sleepHours": 7.1,
-      "hrZone2Minutes": 22,
-      "hrv": 61,
-      "activeCalories": 395
-    }
-  },
   "quests": {
     "activeIds": ["q_sleep_8h", "q_zone2", "q_steps_baseline", "q_hrv_recover"],
     "pool": [
@@ -119,45 +109,6 @@
       }
     ]
   },
-  "dojo": {
-    "id": "d_neon_wolves",
-    "name": "Neon Wolves",
-    "memberCount": 8,
-    "sensei": "Coach Aiko",
-    "weeklyBoss": {
-      "name": "The Iron Tide",
-      "objective": "Squad burns 25,000 active kcal",
-      "progress": 14820,
-      "target": 25000,
-      "endsAt": "2026-05-18T23:59:00+05:30"
-    },
-    "activeBuffs": [
-      {
-        "id": "buff_recovery_aura",
-        "name": "Recovery Aura",
-        "description": "Sleep XP x1.5, intensity rewards capped",
-        "expiresAt": "2026-05-18T06:00:00+05:30"
-      }
-    ]
-  },
-  "chests": [
-    {
-      "id": "chest_001",
-      "rarity": "common",
-      "status": "unlocking",
-      "unlocksAt": "2026-05-17T22:30:00+05:30"
-    },
-    {
-      "id": "chest_002",
-      "rarity": "rare",
-      "status": "pending"
-    },
-    {
-      "id": "chest_003",
-      "rarity": "epic",
-      "status": "pending"
-    }
-  ],
   "leaderboard": [
     {
       "id": "d_neon_wolves",
