@@ -23,9 +23,12 @@ const v1HealthTypes = <HealthDataType>[
   // Body
   HealthDataType.BODY_MASS_INDEX,
   HealthDataType.BODY_FAT_PERCENTAGE,
+  HealthDataType.LEAN_BODY_MASS,
   HealthDataType.WEIGHT,
   HealthDataType.HEIGHT,
-  HealthDataType.VO2MAX,
+  HealthDataType.BODY_TEMPERATURE,
+  HealthDataType.WALKING_HEART_RATE,
+  HealthDataType.TOTAL_CALORIES_BURNED,
 ];
 
 /// All types are read-only for now.

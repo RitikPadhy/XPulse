@@ -6,21 +6,24 @@ import 'health_types.dart';
 /// queries against HealthKit.
 class HealthService {
   HealthService() : _h = Health() {
-    _h.configure();
+    _ready = _h.configure();
   }
 
   final Health _h;
+  late final Future<void> _ready;
 
   /// Whether HealthKit has granted us read access for *all* v1 types.
   /// Returns null on iOS for unknown state (Apple intentionally hides this).
-  Future<bool?> hasAllPermissions() {
+  Future<bool?> hasAllPermissions() async {
+    await _ready;
     return _h.hasPermissions(v1HealthTypes, permissions: v1HealthPermissions);
   }
 
   /// Triggers the iOS permission sheet for any types not yet granted.
   /// Returns true if the OS-level request completed (not "granted" — Apple
   /// won't tell us).
-  Future<bool> requestPermissions() {
+  Future<bool> requestPermissions() async {
+    await _ready;
     return _h.requestAuthorization(v1HealthTypes,
         permissions: v1HealthPermissions);
   }
@@ -30,12 +33,13 @@ class HealthService {
     required DateTime start,
     required DateTime end,
   }) async {
+    await _ready;
     final points = await _h.getHealthDataFromTypes(
       types: v1HealthTypes,
       startTime: start,
       endTime: end,
     );
-    return Health().removeDuplicates(points);
+    return _h.removeDuplicates(points);
   }
 
   /// Converts a [HealthDataPoint] to the JSON shape backend expects.
