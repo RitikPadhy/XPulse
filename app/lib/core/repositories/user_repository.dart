@@ -1,15 +1,12 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart' show rootBundle;
-
 import '../models/user_snapshot.dart';
+import '../services/api_client.dart';
 
 class UserRepository {
-  static const _samplePath = 'assets/data/sample_user.json';
+  UserRepository({ApiClient? api}) : _api = api ?? ApiClient();
 
-  Future<UserSnapshot> loadCurrent() async {
-    final raw = await rootBundle.loadString(_samplePath);
-    final json = jsonDecode(raw) as Map<String, dynamic>;
-    return UserSnapshot.fromJson(json);
-  }
+  final ApiClient _api;
+
+  /// Fetches the user's full snapshot from the backend. All three pages
+  /// (home/quests/friends) bind to the result.
+  Future<UserSnapshot> loadCurrent() => _api.getSnapshot();
 }

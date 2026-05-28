@@ -35,9 +35,13 @@ class PixelCyberpunkSkin implements ComponentLibrary {
   Widget avatar({
     required String avatarKey,
     required String displayName,
-    required String arena,
+    String? subtitle,
   }) =>
-      _Avatar(avatarKey: avatarKey, displayName: displayName, arena: arena);
+      _Avatar(
+        avatarKey: avatarKey,
+        displayName: displayName,
+        subtitle: subtitle,
+      );
 
   @override
   Widget xpBar({
@@ -71,23 +75,20 @@ class PixelCyberpunkSkin implements ComponentLibrary {
       );
 
   @override
-  Widget clanRow({
-    required int rank,
-    required Clan clan,
+  Widget friendRow({
+    required Friend friend,
+    required bool isCurrentUser,
     required VoidCallback onTap,
   }) =>
-      _ClanRow(rank: rank, clan: clan, onTap: onTap);
+      _FriendRow(friend: friend, isCurrentUser: isCurrentUser, onTap: onTap);
 
   @override
-  Widget clanDetailHeader({required Clan clan}) => _ClanDetailHeader(clan: clan);
+  Widget friendDetailHeader({required FriendDetail friend}) =>
+      _FriendDetailHeader(friend: friend);
 
   @override
-  Widget memberRow({
-    required int rank,
-    required ClanMember member,
-    required bool isCurrentUser,
-  }) =>
-      _MemberRow(rank: rank, member: member, isCurrentUser: isCurrentUser);
+  Widget friendDailyXpRow({required DailyXp entry, required bool isToday}) =>
+      _FriendDailyXpRow(entry: entry, isToday: isToday);
 }
 
 // ---------------------------------------------------------------------------
@@ -264,9 +265,8 @@ class _ProfileSheet extends StatelessWidget {
 
           const _ProfileSectionLabel(label: 'Record'),
           const SizedBox(height: 4),
-          _DataRow(label: 'TROPHIES', value: '${user.trophies}'),
-          _DataRow(label: 'ARENA', value: user.arena.toUpperCase()),
-          _DataRow(label: 'AGE', value: '${user.age}'),
+          if (user.country != null)
+            _DataRow(label: 'COUNTRY', value: user.country!.toUpperCase()),
           _DataRow(label: 'JOINED', value: user.joinedAt),
           _DataRow(label: 'AVATAR', value: user.avatar.toUpperCase()),
           _DataRow(label: 'ID', value: user.id.toUpperCase()),
@@ -302,18 +302,11 @@ class _ProfileHero extends StatelessWidget {
                 user.displayName.toUpperCase(),
                 style: _mono(p.textPrimary, size: 22, w: FontWeight.w900),
               ),
-              const SizedBox(height: 4),
-              Text(user.arena.toUpperCase(),
-                  style: _mono(p.accent, size: 11)),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                color: p.primary.withValues(alpha: 0.18),
-                child: Text(
-                  '★ ${user.trophies}',
-                  style: _mono(p.primary, size: 12, w: FontWeight.w900),
-                ),
-              ),
+              if (user.country != null) ...[
+                const SizedBox(height: 4),
+                Text(user.country!.toUpperCase(),
+                    style: _mono(p.accent, size: 11)),
+              ],
             ],
           ),
         ),
@@ -457,11 +450,11 @@ class _SectionHeader extends StatelessWidget {
 class _Avatar extends StatelessWidget {
   final String avatarKey;
   final String displayName;
-  final String arena;
+  final String? subtitle;
   const _Avatar({
     required this.avatarKey,
     required this.displayName,
-    required this.arena,
+    this.subtitle,
   });
 
   @override
@@ -481,6 +474,13 @@ class _Avatar extends StatelessWidget {
           displayName.toUpperCase(),
           style: _mono(p.textPrimary, size: 26, w: FontWeight.w900),
         ),
+        if (subtitle != null && subtitle!.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            subtitle!.toUpperCase(),
+            style: _mono(p.textMuted, size: 12),
+          ),
+        ],
       ],
     );
   }
@@ -1110,43 +1110,54 @@ class _QuestPickerTile extends StatelessWidget {
   }
 }
 
-class _ClanRow extends StatelessWidget {
-  final int rank;
-  final Clan clan;
+class _FriendRow extends StatelessWidget {
+  final Friend friend;
+  final bool isCurrentUser;
   final VoidCallback onTap;
-  const _ClanRow({required this.rank, required this.clan, required this.onTap});
+  const _FriendRow({
+    required this.friend,
+    required this.isCurrentUser,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    final isTop = rank == 1;
-    final accentColor = isTop ? p.primary : p.accent;
+    final isTop = friend.rank == 1;
+    final accentColor = isCurrentUser
+        ? p.primary
+        : (isTop ? p.primary : p.accent);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: p.surface,
+          color: isCurrentUser
+              ? p.primary.withValues(alpha: 0.12)
+              : p.surface,
           border: Border.all(color: accentColor, width: 2),
         ),
         child: Row(
           children: [
             SizedBox(
               width: 32,
-              child: Text('#$rank',
+              child: Text('#${friend.rank}',
                   style: _mono(accentColor, size: 14, w: FontWeight.w900)),
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(clan.name.toUpperCase(),
+                  Text(friend.displayName.toUpperCase(),
                       style:
                           _mono(p.textPrimary, size: 14, w: FontWeight.w800)),
                   const SizedBox(height: 2),
                   Text(
-                    '[${clan.tag}]  •  ${clan.memberCount} members',
+                    [
+                      if (friend.country != null) friend.country!.toUpperCase(),
+                      'today +${friend.dailyXp}',
+                    ].join('  •  '),
                     style: _mono(p.textMuted, size: 10),
                   ),
                 ],
@@ -1155,9 +1166,9 @@ class _ClanRow extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${clan.totalTrophies}',
+                Text('${friend.totalXp}',
                     style: _mono(accentColor, size: 16, w: FontWeight.w900)),
-                Text('TROPHIES', style: _mono(p.textMuted, size: 9)),
+                Text('TOTAL XP', style: _mono(p.textMuted, size: 9)),
               ],
             ),
           ],
@@ -1167,9 +1178,9 @@ class _ClanRow extends StatelessWidget {
   }
 }
 
-class _ClanDetailHeader extends StatelessWidget {
-  final Clan clan;
-  const _ClanDetailHeader({required this.clan});
+class _FriendDetailHeader extends StatelessWidget {
+  final FriendDetail friend;
+  const _FriendDetailHeader({required this.friend});
 
   @override
   Widget build(BuildContext context) {
@@ -1187,68 +1198,70 @@ class _ClanDetailHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(clan.name.toUpperCase(),
+          Text(friend.displayName.toUpperCase(),
               style: _mono(p.textPrimary, size: 22, w: FontWeight.w900)),
-          const SizedBox(height: 4),
-          Text('[${clan.tag}]  •  ${clan.memberCount} MEMBERS',
-              style: _mono(p.textMuted, size: 11)),
+          if (friend.country != null || friend.rank != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              [
+                if (friend.rank != null) 'RANK #${friend.rank}',
+                if (friend.country != null) friend.country!.toUpperCase(),
+                'JOINED ${friend.joinedAt}',
+              ].join('  •  '),
+              style: _mono(p.textMuted, size: 11),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${clan.totalTrophies}',
+              Text('${friend.totalXp}',
                   style: _mono(p.primary, size: 30, w: FontWeight.w900)),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('TOTAL TROPHIES',
+                child: Text('TOTAL XP  •  +${friend.dailyXp} TODAY',
                     style: _mono(p.textMuted, size: 11)),
               ),
             ],
           ),
+          if (friend.bio != null && friend.bio!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(friend.bio!, style: _mono(p.textPrimary, size: 12)),
+          ],
         ],
       ),
     );
   }
 }
 
-class _MemberRow extends StatelessWidget {
-  final int rank;
-  final ClanMember member;
-  final bool isCurrentUser;
-  const _MemberRow({
-    required this.rank,
-    required this.member,
-    required this.isCurrentUser,
-  });
+class _FriendDailyXpRow extends StatelessWidget {
+  final DailyXp entry;
+  final bool isToday;
+  const _FriendDailyXpRow({required this.entry, required this.isToday});
 
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    final highlight = isCurrentUser ? p.primary : p.textMuted;
+    final highlight = isToday ? p.primary : p.textMuted;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isCurrentUser
+        color: isToday
             ? p.primary.withValues(alpha: 0.12)
             : p.surface.withValues(alpha: 0.7),
         border: Border.all(
-          color: isCurrentUser ? p.primary : p.textMuted.withValues(alpha: 0.3),
+          color: isToday ? p.primary : p.textMuted.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 32,
-            child: Text('#$rank',
-                style: _mono(highlight, size: 12, w: FontWeight.w800)),
-          ),
           Expanded(
-            child: Text(member.name.toUpperCase(),
+            child: Text(entry.day,
                 style: _mono(p.textPrimary, size: 13, w: FontWeight.w700)),
           ),
-          Text('${member.trophies}',
+          Text('+${entry.xp} XP',
               style: _mono(highlight, size: 13, w: FontWeight.w800)),
         ],
       ),

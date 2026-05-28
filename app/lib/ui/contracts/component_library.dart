@@ -26,7 +26,7 @@ abstract class ComponentLibrary {
   Widget sectionHeader({required String label});
 
   /// Large pixel-art avatar block — centerpiece of the home page.
-  Widget avatar({required String avatarKey, required String displayName, required String arena});
+  Widget avatar({required String avatarKey, required String displayName, String? subtitle});
 
   /// Daily XP bar. Tappable when `onTap` is non-null (used to open the
   /// breakdown view).
@@ -53,20 +53,16 @@ abstract class ComponentLibrary {
     required VoidCallback onTap,
   });
 
-  /// One row in the clan leaderboard.
-  Widget clanRow({
-    required int rank,
-    required Clan clan,
+  /// One row in the friends leaderboard.
+  Widget friendRow({
+    required Friend friend,
+    required bool isCurrentUser,
     required VoidCallback onTap,
   });
 
-  /// Header inside the clan detail view.
-  Widget clanDetailHeader({required Clan clan});
+  /// Header at the top of the friend-detail view.
+  Widget friendDetailHeader({required FriendDetail friend});
 
-  /// One member row inside a clan detail.
-  Widget memberRow({
-    required int rank,
-    required ClanMember member,
-    required bool isCurrentUser,
-  });
+  /// One row in the friend's last-7-days XP history list.
+  Widget friendDailyXpRow({required DailyXp entry, required bool isToday});
 }

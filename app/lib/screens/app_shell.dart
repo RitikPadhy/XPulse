@@ -125,6 +125,24 @@ class _AppShellState extends State<AppShell> {
           child: FutureBuilder<UserSnapshot>(
             future: _future,
             builder: (context, snap) {
+              if (snap.hasError) {
+                // Surface the parse / network failure instead of hanging
+                // on the loading screen forever.
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Could not load.\n${snap.error}\n\n${snap.stackTrace ?? ''}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: p.textMuted,
+                        fontFamily: 'Courier',
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                );
+              }
               if (!snap.hasData) {
                 return Center(
                   child: Text(

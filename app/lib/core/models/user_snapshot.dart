@@ -2,13 +2,13 @@ class UserSnapshot {
   final UserProfile user;
   final TodayData today;
   final QuestBook quests;
-  final List<Clan> leaderboard;
+  final List<Friend> friends;
 
   UserSnapshot({
     required this.user,
     required this.today,
     required this.quests,
-    required this.leaderboard,
+    required this.friends,
   });
 
   /// Per-source breakdown of today's XP. Completed quests are listed
@@ -53,12 +53,13 @@ class UserSnapshot {
     return items;
   }
 
+  /// Parses the backend `/v1/me/snapshot` response.
   factory UserSnapshot.fromJson(Map<String, dynamic> json) => UserSnapshot(
-        user: UserProfile.fromJson(json['user'] as Map<String, dynamic>),
+        user: UserProfile.fromMeJson(json['me'] as Map<String, dynamic>),
         today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
         quests: QuestBook.fromJson(json['quests'] as Map<String, dynamic>),
-        leaderboard: (json['leaderboard'] as List)
-            .map((e) => Clan.fromJson(e as Map<String, dynamic>))
+        friends: (json['friends'] as List)
+            .map((e) => Friend.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
 }
@@ -66,31 +67,32 @@ class UserSnapshot {
 class UserProfile {
   final String id;
   final String displayName;
-  final int age;
   final String joinedAt;
-  final String arena;
-  final int trophies;
+  final String? country;
   final String avatar;
 
   UserProfile({
     required this.id,
     required this.displayName,
-    required this.age,
     required this.joinedAt,
-    required this.arena,
-    required this.trophies,
     required this.avatar,
+    this.country,
   });
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-        id: json['id'] as String,
-        displayName: json['displayName'] as String,
-        age: json['age'] as int,
-        joinedAt: json['joinedAt'] as String,
-        arena: json['arena'] as String,
-        trophies: json['trophies'] as int,
-        avatar: json['avatar'] as String,
-      );
+  /// Maps the backend `me` payload (id/name/role/created_at/details) to the
+  /// shape the UI consumes.
+  factory UserProfile.fromMeJson(Map<String, dynamic> json) {
+    final details = json['details'] as Map<String, dynamic>?;
+    final createdAt = json['created_at'] as String;
+    return UserProfile(
+      id: json['id'].toString(),
+      displayName:
+          (details?['display_name'] as String?) ?? (json['name'] as String),
+      joinedAt: createdAt.split('T').first,
+      country: details?['country'] as String?,
+      avatar: (details?['avatar_key'] as String?) ?? 'default',
+    );
+  }
 }
 
 class TodayData {
@@ -183,34 +185,34 @@ class Quest {
       );
 }
 
-class Clan {
-  final String id;
-  final String name;
-  final String tag;
-  final List<ClanMember> members;
+/// One row in the friends leaderboard.
+class Friend {
+  final int id;
+  final String displayName;
+  final String? avatarKey;
+  final String? country;
+  final int dailyXp;
+  final int totalXp;
+  final int rank;
 
-  Clan({
+  Friend({
     required this.id,
-    required this.name,
-    required this.tag,
-    required this.members,
+    required this.displayName,
+    required this.dailyXp,
+    required this.totalXp,
+    required this.rank,
+    this.avatarKey,
+    this.country,
   });
 
-  int get totalTrophies =>
-      members.fold(0, (acc, m) => acc + m.trophies);
-
-  int get memberCount => members.length;
-
-  List<ClanMember> get sortedByTrophies =>
-      [...members]..sort((a, b) => b.trophies.compareTo(a.trophies));
-
-  factory Clan.fromJson(Map<String, dynamic> json) => Clan(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        tag: json['tag'] as String,
-        members: (json['members'] as List)
-            .map((e) => ClanMember.fromJson(e as Map<String, dynamic>))
-            .toList(),
+  factory Friend.fromJson(Map<String, dynamic> j) => Friend(
+        id: j['id'] as int,
+        displayName: j['display_name'] as String,
+        avatarKey: j['avatar_key'] as String?,
+        country: j['country'] as String?,
+        dailyXp: j['daily_xp'] as int,
+        totalXp: j['total_xp'] as int,
+        rank: j['rank'] as int,
       );
 }
 
@@ -223,16 +225,56 @@ class XpGain {
   const XpGain({required this.label, required this.source, required this.xp});
 }
 
-class ClanMember {
-  final String id;
-  final String name;
-  final int trophies;
+/// Detailed public profile of a single user — fetched on tap from the friends
+/// leaderboard via GET /v1/users/{id}.
+class FriendDetail {
+  final int id;
+  final String displayName;
+  final String? avatarKey;
+  final String? country;
+  final String? bio;
+  final String joinedAt;
+  final int dailyXp;
+  final int totalXp;
+  final int? rank;
+  final List<DailyXp> last7Days;
 
-  ClanMember({required this.id, required this.name, required this.trophies});
+  FriendDetail({
+    required this.id,
+    required this.displayName,
+    required this.joinedAt,
+    required this.dailyXp,
+    required this.totalXp,
+    required this.last7Days,
+    this.avatarKey,
+    this.country,
+    this.bio,
+    this.rank,
+  });
 
-  factory ClanMember.fromJson(Map<String, dynamic> json) => ClanMember(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        trophies: json['trophies'] as int,
+  factory FriendDetail.fromJson(Map<String, dynamic> j) => FriendDetail(
+        id: j['id'] as int,
+        displayName: j['display_name'] as String,
+        avatarKey: j['avatar_key'] as String?,
+        country: j['country'] as String?,
+        bio: j['bio'] as String?,
+        joinedAt: (j['joined_at'] as String).split('T').first,
+        dailyXp: j['daily_xp'] as int,
+        totalXp: j['total_xp'] as int,
+        rank: j['rank'] as int?,
+        last7Days: (j['last_7_days'] as List)
+            .map((e) => DailyXp.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+class DailyXp {
+  final String day;
+  final int xp;
+  DailyXp({required this.day, required this.xp});
+
+  factory DailyXp.fromJson(Map<String, dynamic> j) => DailyXp(
+        day: j['day'] as String,
+        xp: j['xp'] as int,
       );
 }

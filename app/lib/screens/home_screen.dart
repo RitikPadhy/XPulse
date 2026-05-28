@@ -73,7 +73,7 @@ class _HomeView extends StatelessWidget {
         c.avatar(
           avatarKey: snap.user.avatar,
           displayName: snap.user.displayName,
-          arena: snap.user.arena,
+          subtitle: snap.user.country,
         ),
         const Spacer(flex: 2),
       ],

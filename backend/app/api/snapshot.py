@@ -37,8 +37,12 @@ def _today() -> date:
     return datetime.now(timezone.utc).date()
 
 
-def _friend_rows(db: Session) -> list[tuple[int, str, str | None, str | None, int, int]]:
-    """All REGULAR users with their (daily_xp, total_xp), sorted by total DESC.
+def _friend_rows(
+    db: Session, viewer_id: int
+) -> list[tuple[int, str, str | None, str | None, int, int]]:
+    """Returns the leaderboard rows the viewer sees: every REGULAR user plus
+    the viewer themselves (even if the viewer is an ADMIN). Sorted by
+    total XP desc.
 
     Returns tuples of (id, display_name, avatar_key, country, daily_xp, total_xp).
     `display_name` falls back to `users.name` if `user_details.display_name` is null.
@@ -60,7 +64,7 @@ def _friend_rows(db: Session) -> list[tuple[int, str, str | None, str | None, in
         )
         .join(UserDetail, UserDetail.user_id == User.id, isouter=True)
         .join(UserXpDaily, UserXpDaily.user_id == User.id, isouter=True)
-        .where(User.role == "REGULAR")
+        .where((User.role == "REGULAR") | (User.id == viewer_id))
         .group_by(User.id, UserDetail.display_name, User.name, UserDetail.avatar_key, UserDetail.country)
         .order_by(total.desc(), User.id.asc())
     )
@@ -104,7 +108,7 @@ def get_snapshot(
     refresh_progress(db, pool)
     quests_block = serialize_pool(pool) if pool else _empty_quests()
 
-    rows = _friend_rows(db)
+    rows = _friend_rows(db, viewer_id=user.id)
     friends = [
         FriendSummary(
             id=row[0],
@@ -191,7 +195,7 @@ def deactivate_quest(
 @router.get("/users/{user_id}", response_model=UserPublicOut)
 def get_user_public(
     user_id: int,
-    _: User = Depends(get_current_user),  # auth required, no per-user authorization yet
+    viewer: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> UserPublicOut:
     target = db.scalar(
@@ -228,14 +232,14 @@ def get_user_public(
         for i in range(7)
     ]
 
-    # Rank among REGULAR users by total_xp DESC. Skip if target isn't REGULAR.
+    # Rank in the viewer's leaderboard frame (REGULAR users + the viewer).
+    # `null` if the target isn't visible to the viewer.
     rank: int | None = None
-    if target.role == "REGULAR":
-        ranked = _friend_rows(db)
-        for idx, row in enumerate(ranked):
-            if row[0] == user_id:
-                rank = idx + 1
-                break
+    ranked = _friend_rows(db, viewer_id=viewer.id)
+    for idx, row in enumerate(ranked):
+        if row[0] == user_id:
+            rank = idx + 1
+            break
 
     details = target.details
     display_name = (details.display_name if details and details.display_name else target.name)
