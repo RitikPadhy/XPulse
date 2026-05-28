@@ -18,7 +18,6 @@ from app.auth import get_current_user
 from app.db import get_db
 from app.models import User, UserDetail, UserQuest, UserXpDaily
 from app.quests import (
-    POOL_SIZE,
     ACTIVE_SLOTS,
     get_or_assign_pool,
     refresh_progress,
