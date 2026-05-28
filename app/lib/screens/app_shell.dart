@@ -136,9 +136,7 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: c.background(
-        child: SafeArea(child: _buildContent()),
-      ),
+      body: c.background(child: SafeArea(child: _buildContent())),
     );
   }
 
@@ -165,19 +163,20 @@ class _AppShellState extends State<AppShell> {
     return _buildErrorView();
   }
 
-  /// Brief loading state: just the launch-screen gradient, no text. The native
-  /// launch screen fades into this (same gradient), so there's no second
-  /// "XPULSE" — the background simply continues until Home/Auth is ready.
+  /// Loading state, normally invisible: the native splash overlay (installed
+  /// in AppDelegate) sits on top until `_load()` finishes, so this only shows
+  /// as a fallback if that overlay ever fails to attach. Matches the launch
+  /// screen's gradient so even then there's no jarring flash.
   Widget _buildLoadingView() => const DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0D0421), Color(0xFFA893CC)],
-          ),
-        ),
-        child: SizedBox.expand(),
-      );
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF0D0421), Color(0xFFA893CC)],
+      ),
+    ),
+    child: SizedBox.expand(),
+  );
 
   Widget _buildErrorView() {
     final p = SkinScope.of(context).palette;
@@ -212,7 +211,9 @@ class _AppShellState extends State<AppShell> {
               onTap: _retrying ? null : _retry,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: _retrying
                       ? p.primary.withValues(alpha: 0.4)
