@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
@@ -19,22 +19,28 @@ def ingest(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> IngestResponse:
-    inserted = 0
-    duplicates = 0
-    for sample in payload.samples:
-        row = HealthSample(user_id=user.id, **sample.model_dump())
-        db.add(row)
-        try:
-            db.flush()
-            inserted += 1
-        except IntegrityError:
-            db.rollback()
-            duplicates += 1
+    received = len(payload.samples)
+    if received == 0:
+        return IngestResponse(received=0, inserted=0, duplicates=0)
+
+    rows = [
+        {"user_id": user.id, **sample.model_dump()} for sample in payload.samples
+    ]
+    stmt = (
+        pg_insert(HealthSample)
+        .values(rows)
+        .on_conflict_do_nothing(
+            index_elements=["user_id", "type", "start_date", "end_date"]
+        )
+    )
+    result = db.execute(stmt)
     db.commit()
+
+    inserted = result.rowcount or 0
     return IngestResponse(
-        received=len(payload.samples),
+        received=received,
         inserted=inserted,
-        duplicates=duplicates,
+        duplicates=received - inserted,
     )
 
 
