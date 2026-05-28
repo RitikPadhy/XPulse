@@ -10,7 +10,6 @@ import '../core/services/health_service.dart';
 import '../core/services/storage_service.dart';
 import '../core/services/sync_service.dart';
 import '../ui/contracts/skin_scope.dart';
-import 'health_setup_screen.dart';
 import 'home_screen.dart';
 import 'leaderboard_screen.dart';
 import 'side_quests_screen.dart';
@@ -146,7 +145,6 @@ class _AppShellState extends State<AppShell> {
                     SideQuestsScreen(),
                     HomeScreen(),
                     LeaderboardScreen(),
-                    HealthSetupScreen(),
                   ],
                 ),
               );

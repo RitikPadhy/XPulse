@@ -19,7 +19,10 @@ class XPulseApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: appPalette.background,
+        // Match LaunchScreen.storyboard (#0B0420) so the first Flutter frame
+        // blends into the iOS launch image instead of flashing a different
+        // color before the synthwave painter draws.
+        scaffoldBackgroundColor: const Color(0xFF0B0420),
       ),
       home: SkinScope(
         components: skin,

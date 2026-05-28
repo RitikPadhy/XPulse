@@ -173,9 +173,17 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
   Widget _statusRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontFamily: 'Courier', letterSpacing: 2)),
-        Text(value, style: const TextStyle(fontFamily: 'Courier')),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontFamily: 'Courier'),
+          ),
+        ),
       ],
     );
   }

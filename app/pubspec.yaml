@@ -2,7 +2,7 @@ name: xpulse
 description: "XPulse — synchronized biometrics, collective progression."
 publish_to: 'none'
 
-version: 0.1.0+1
+version: 0.1.0+14
 
 environment:
   sdk: ^3.9.2

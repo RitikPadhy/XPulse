@@ -1,28 +1,425 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22154" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
         <scene sceneID="EHf-IW-A2E">
             <objects>
                 <viewController id="01J-lp-oVM" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Ydg-fD-yQy"/>
-                        <viewControllerLayoutGuide type="bottom" id="xbc-2k-c8Z"/>
-                    </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                    <view key="view" contentMode="scaleToFill" id="root-view">
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
-                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-0">
+                                <color key="backgroundColor" red="0.0464" green="0.0162" blue="0.1268" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-1">
+                                <color key="backgroundColor" red="0.0528" green="0.0172" blue="0.1295" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-2">
+                                <color key="backgroundColor" red="0.0593" green="0.0181" blue="0.1321" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-3">
+                                <color key="backgroundColor" red="0.0658" green="0.0191" blue="0.1348" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-4">
+                                <color key="backgroundColor" red="0.0723" green="0.0201" blue="0.1374" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-5">
+                                <color key="backgroundColor" red="0.0787" green="0.0211" blue="0.1400" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-6">
+                                <color key="backgroundColor" red="0.0852" green="0.0221" blue="0.1427" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-7">
+                                <color key="backgroundColor" red="0.0917" green="0.0230" blue="0.1453" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-8">
+                                <color key="backgroundColor" red="0.0981" green="0.0240" blue="0.1480" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-9">
+                                <color key="backgroundColor" red="0.1046" green="0.0250" blue="0.1506" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-10">
+                                <color key="backgroundColor" red="0.1111" green="0.0260" blue="0.1533" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-11">
+                                <color key="backgroundColor" red="0.1175" green="0.0270" blue="0.1559" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-12">
+                                <color key="backgroundColor" red="0.1240" green="0.0279" blue="0.1586" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-13">
+                                <color key="backgroundColor" red="0.1305" green="0.0289" blue="0.1612" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-14">
+                                <color key="backgroundColor" red="0.1370" green="0.0299" blue="0.1639" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-15">
+                                <color key="backgroundColor" red="0.1434" green="0.0309" blue="0.1665" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-16">
+                                <color key="backgroundColor" red="0.1499" green="0.0319" blue="0.1692" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-17">
+                                <color key="backgroundColor" red="0.1564" green="0.0328" blue="0.1718" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-18">
+                                <color key="backgroundColor" red="0.1628" green="0.0338" blue="0.1745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-19">
+                                <color key="backgroundColor" red="0.1693" green="0.0348" blue="0.1771" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-20">
+                                <color key="backgroundColor" red="0.1758" green="0.0358" blue="0.1798" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-21">
+                                <color key="backgroundColor" red="0.1823" green="0.0368" blue="0.1824" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-22">
+                                <color key="backgroundColor" red="0.1887" green="0.0377" blue="0.1850" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-23">
+                                <color key="backgroundColor" red="0.1952" green="0.0387" blue="0.1877" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-24">
+                                <color key="backgroundColor" red="0.2017" green="0.0397" blue="0.1903" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-25">
+                                <color key="backgroundColor" red="0.2081" green="0.0407" blue="0.1930" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-26">
+                                <color key="backgroundColor" red="0.2146" green="0.0417" blue="0.1956" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-27">
+                                <color key="backgroundColor" red="0.2211" green="0.0426" blue="0.1983" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-28">
+                                <color key="backgroundColor" red="0.2275" green="0.0436" blue="0.2009" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-29">
+                                <color key="backgroundColor" red="0.2340" green="0.0446" blue="0.2036" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-30">
+                                <color key="backgroundColor" red="0.2405" green="0.0456" blue="0.2062" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-31">
+                                <color key="backgroundColor" red="0.2470" green="0.0466" blue="0.2089" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-32">
+                                <color key="backgroundColor" red="0.2534" green="0.0475" blue="0.2115" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-33">
+                                <color key="backgroundColor" red="0.2599" green="0.0485" blue="0.2142" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-34">
+                                <color key="backgroundColor" red="0.2664" green="0.0495" blue="0.2168" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-35">
+                                <color key="backgroundColor" red="0.2728" green="0.0505" blue="0.2195" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-36">
+                                <color key="backgroundColor" red="0.2793" green="0.0515" blue="0.2221" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-37">
+                                <color key="backgroundColor" red="0.2858" green="0.0525" blue="0.2248" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-38">
+                                <color key="backgroundColor" red="0.2923" green="0.0534" blue="0.2274" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-39">
+                                <color key="backgroundColor" red="0.2987" green="0.0544" blue="0.2300" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-0">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-0-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-0-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-1">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-1-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-1-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-2">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-2-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-2-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-3">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-3-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-3-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-4">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-4-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-4-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-5">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-5-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-5-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-6">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-6-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-6-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-7">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-7-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-7-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-8">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-8-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-8-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-9">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-9-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-9-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-10">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-10-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-10-h"/>
+                                </constraints>
+                            </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-11">
+                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="2.2" id="star-11-w"/>
+                                    <constraint firstAttribute="height" constant="2.2" id="star-11-h"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XPULSE" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xpulse-label">
+                                <fontDescription key="fontDescription" name="Courier-Bold" family="Courier" pointSize="48"/>
+                                <color key="textColor" red="0.9294" green="0.8862" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SYNCHRONIZED BIOMETRICS" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tagline-label">
+                                <fontDescription key="fontDescription" name="Courier-Bold" family="Courier" pointSize="20"/>
+                                <color key="textColor" red="0.6588" green="0.5765" blue="0.8" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" red="0.0464" green="0.0162" blue="0.1268" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
+                            <constraint firstItem="sky-0" firstAttribute="top" secondItem="root-view" secondAttribute="top" id="sky-0-t"/>
+                            <constraint firstItem="sky-0" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-0-l"/>
+                            <constraint firstItem="sky-0" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-0-r"/>
+                            <constraint firstItem="sky-0" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-0-h"/>
+                            <constraint firstItem="sky-1" firstAttribute="top" secondItem="sky-0" secondAttribute="bottom" id="sky-1-t"/>
+                            <constraint firstItem="sky-1" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-1-l"/>
+                            <constraint firstItem="sky-1" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-1-r"/>
+                            <constraint firstItem="sky-1" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-1-h"/>
+                            <constraint firstItem="sky-2" firstAttribute="top" secondItem="sky-1" secondAttribute="bottom" id="sky-2-t"/>
+                            <constraint firstItem="sky-2" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-2-l"/>
+                            <constraint firstItem="sky-2" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-2-r"/>
+                            <constraint firstItem="sky-2" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-2-h"/>
+                            <constraint firstItem="sky-3" firstAttribute="top" secondItem="sky-2" secondAttribute="bottom" id="sky-3-t"/>
+                            <constraint firstItem="sky-3" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-3-l"/>
+                            <constraint firstItem="sky-3" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-3-r"/>
+                            <constraint firstItem="sky-3" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-3-h"/>
+                            <constraint firstItem="sky-4" firstAttribute="top" secondItem="sky-3" secondAttribute="bottom" id="sky-4-t"/>
+                            <constraint firstItem="sky-4" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-4-l"/>
+                            <constraint firstItem="sky-4" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-4-r"/>
+                            <constraint firstItem="sky-4" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-4-h"/>
+                            <constraint firstItem="sky-5" firstAttribute="top" secondItem="sky-4" secondAttribute="bottom" id="sky-5-t"/>
+                            <constraint firstItem="sky-5" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-5-l"/>
+                            <constraint firstItem="sky-5" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-5-r"/>
+                            <constraint firstItem="sky-5" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-5-h"/>
+                            <constraint firstItem="sky-6" firstAttribute="top" secondItem="sky-5" secondAttribute="bottom" id="sky-6-t"/>
+                            <constraint firstItem="sky-6" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-6-l"/>
+                            <constraint firstItem="sky-6" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-6-r"/>
+                            <constraint firstItem="sky-6" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-6-h"/>
+                            <constraint firstItem="sky-7" firstAttribute="top" secondItem="sky-6" secondAttribute="bottom" id="sky-7-t"/>
+                            <constraint firstItem="sky-7" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-7-l"/>
+                            <constraint firstItem="sky-7" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-7-r"/>
+                            <constraint firstItem="sky-7" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-7-h"/>
+                            <constraint firstItem="sky-8" firstAttribute="top" secondItem="sky-7" secondAttribute="bottom" id="sky-8-t"/>
+                            <constraint firstItem="sky-8" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-8-l"/>
+                            <constraint firstItem="sky-8" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-8-r"/>
+                            <constraint firstItem="sky-8" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-8-h"/>
+                            <constraint firstItem="sky-9" firstAttribute="top" secondItem="sky-8" secondAttribute="bottom" id="sky-9-t"/>
+                            <constraint firstItem="sky-9" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-9-l"/>
+                            <constraint firstItem="sky-9" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-9-r"/>
+                            <constraint firstItem="sky-9" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-9-h"/>
+                            <constraint firstItem="sky-10" firstAttribute="top" secondItem="sky-9" secondAttribute="bottom" id="sky-10-t"/>
+                            <constraint firstItem="sky-10" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-10-l"/>
+                            <constraint firstItem="sky-10" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-10-r"/>
+                            <constraint firstItem="sky-10" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-10-h"/>
+                            <constraint firstItem="sky-11" firstAttribute="top" secondItem="sky-10" secondAttribute="bottom" id="sky-11-t"/>
+                            <constraint firstItem="sky-11" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-11-l"/>
+                            <constraint firstItem="sky-11" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-11-r"/>
+                            <constraint firstItem="sky-11" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-11-h"/>
+                            <constraint firstItem="sky-12" firstAttribute="top" secondItem="sky-11" secondAttribute="bottom" id="sky-12-t"/>
+                            <constraint firstItem="sky-12" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-12-l"/>
+                            <constraint firstItem="sky-12" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-12-r"/>
+                            <constraint firstItem="sky-12" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-12-h"/>
+                            <constraint firstItem="sky-13" firstAttribute="top" secondItem="sky-12" secondAttribute="bottom" id="sky-13-t"/>
+                            <constraint firstItem="sky-13" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-13-l"/>
+                            <constraint firstItem="sky-13" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-13-r"/>
+                            <constraint firstItem="sky-13" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-13-h"/>
+                            <constraint firstItem="sky-14" firstAttribute="top" secondItem="sky-13" secondAttribute="bottom" id="sky-14-t"/>
+                            <constraint firstItem="sky-14" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-14-l"/>
+                            <constraint firstItem="sky-14" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-14-r"/>
+                            <constraint firstItem="sky-14" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-14-h"/>
+                            <constraint firstItem="sky-15" firstAttribute="top" secondItem="sky-14" secondAttribute="bottom" id="sky-15-t"/>
+                            <constraint firstItem="sky-15" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-15-l"/>
+                            <constraint firstItem="sky-15" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-15-r"/>
+                            <constraint firstItem="sky-15" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-15-h"/>
+                            <constraint firstItem="sky-16" firstAttribute="top" secondItem="sky-15" secondAttribute="bottom" id="sky-16-t"/>
+                            <constraint firstItem="sky-16" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-16-l"/>
+                            <constraint firstItem="sky-16" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-16-r"/>
+                            <constraint firstItem="sky-16" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-16-h"/>
+                            <constraint firstItem="sky-17" firstAttribute="top" secondItem="sky-16" secondAttribute="bottom" id="sky-17-t"/>
+                            <constraint firstItem="sky-17" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-17-l"/>
+                            <constraint firstItem="sky-17" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-17-r"/>
+                            <constraint firstItem="sky-17" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-17-h"/>
+                            <constraint firstItem="sky-18" firstAttribute="top" secondItem="sky-17" secondAttribute="bottom" id="sky-18-t"/>
+                            <constraint firstItem="sky-18" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-18-l"/>
+                            <constraint firstItem="sky-18" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-18-r"/>
+                            <constraint firstItem="sky-18" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-18-h"/>
+                            <constraint firstItem="sky-19" firstAttribute="top" secondItem="sky-18" secondAttribute="bottom" id="sky-19-t"/>
+                            <constraint firstItem="sky-19" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-19-l"/>
+                            <constraint firstItem="sky-19" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-19-r"/>
+                            <constraint firstItem="sky-19" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-19-h"/>
+                            <constraint firstItem="sky-20" firstAttribute="top" secondItem="sky-19" secondAttribute="bottom" id="sky-20-t"/>
+                            <constraint firstItem="sky-20" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-20-l"/>
+                            <constraint firstItem="sky-20" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-20-r"/>
+                            <constraint firstItem="sky-20" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-20-h"/>
+                            <constraint firstItem="sky-21" firstAttribute="top" secondItem="sky-20" secondAttribute="bottom" id="sky-21-t"/>
+                            <constraint firstItem="sky-21" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-21-l"/>
+                            <constraint firstItem="sky-21" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-21-r"/>
+                            <constraint firstItem="sky-21" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-21-h"/>
+                            <constraint firstItem="sky-22" firstAttribute="top" secondItem="sky-21" secondAttribute="bottom" id="sky-22-t"/>
+                            <constraint firstItem="sky-22" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-22-l"/>
+                            <constraint firstItem="sky-22" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-22-r"/>
+                            <constraint firstItem="sky-22" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-22-h"/>
+                            <constraint firstItem="sky-23" firstAttribute="top" secondItem="sky-22" secondAttribute="bottom" id="sky-23-t"/>
+                            <constraint firstItem="sky-23" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-23-l"/>
+                            <constraint firstItem="sky-23" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-23-r"/>
+                            <constraint firstItem="sky-23" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-23-h"/>
+                            <constraint firstItem="sky-24" firstAttribute="top" secondItem="sky-23" secondAttribute="bottom" id="sky-24-t"/>
+                            <constraint firstItem="sky-24" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-24-l"/>
+                            <constraint firstItem="sky-24" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-24-r"/>
+                            <constraint firstItem="sky-24" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-24-h"/>
+                            <constraint firstItem="sky-25" firstAttribute="top" secondItem="sky-24" secondAttribute="bottom" id="sky-25-t"/>
+                            <constraint firstItem="sky-25" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-25-l"/>
+                            <constraint firstItem="sky-25" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-25-r"/>
+                            <constraint firstItem="sky-25" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-25-h"/>
+                            <constraint firstItem="sky-26" firstAttribute="top" secondItem="sky-25" secondAttribute="bottom" id="sky-26-t"/>
+                            <constraint firstItem="sky-26" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-26-l"/>
+                            <constraint firstItem="sky-26" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-26-r"/>
+                            <constraint firstItem="sky-26" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-26-h"/>
+                            <constraint firstItem="sky-27" firstAttribute="top" secondItem="sky-26" secondAttribute="bottom" id="sky-27-t"/>
+                            <constraint firstItem="sky-27" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-27-l"/>
+                            <constraint firstItem="sky-27" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-27-r"/>
+                            <constraint firstItem="sky-27" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-27-h"/>
+                            <constraint firstItem="sky-28" firstAttribute="top" secondItem="sky-27" secondAttribute="bottom" id="sky-28-t"/>
+                            <constraint firstItem="sky-28" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-28-l"/>
+                            <constraint firstItem="sky-28" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-28-r"/>
+                            <constraint firstItem="sky-28" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-28-h"/>
+                            <constraint firstItem="sky-29" firstAttribute="top" secondItem="sky-28" secondAttribute="bottom" id="sky-29-t"/>
+                            <constraint firstItem="sky-29" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-29-l"/>
+                            <constraint firstItem="sky-29" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-29-r"/>
+                            <constraint firstItem="sky-29" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-29-h"/>
+                            <constraint firstItem="sky-30" firstAttribute="top" secondItem="sky-29" secondAttribute="bottom" id="sky-30-t"/>
+                            <constraint firstItem="sky-30" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-30-l"/>
+                            <constraint firstItem="sky-30" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-30-r"/>
+                            <constraint firstItem="sky-30" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-30-h"/>
+                            <constraint firstItem="sky-31" firstAttribute="top" secondItem="sky-30" secondAttribute="bottom" id="sky-31-t"/>
+                            <constraint firstItem="sky-31" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-31-l"/>
+                            <constraint firstItem="sky-31" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-31-r"/>
+                            <constraint firstItem="sky-31" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-31-h"/>
+                            <constraint firstItem="sky-32" firstAttribute="top" secondItem="sky-31" secondAttribute="bottom" id="sky-32-t"/>
+                            <constraint firstItem="sky-32" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-32-l"/>
+                            <constraint firstItem="sky-32" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-32-r"/>
+                            <constraint firstItem="sky-32" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-32-h"/>
+                            <constraint firstItem="sky-33" firstAttribute="top" secondItem="sky-32" secondAttribute="bottom" id="sky-33-t"/>
+                            <constraint firstItem="sky-33" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-33-l"/>
+                            <constraint firstItem="sky-33" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-33-r"/>
+                            <constraint firstItem="sky-33" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-33-h"/>
+                            <constraint firstItem="sky-34" firstAttribute="top" secondItem="sky-33" secondAttribute="bottom" id="sky-34-t"/>
+                            <constraint firstItem="sky-34" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-34-l"/>
+                            <constraint firstItem="sky-34" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-34-r"/>
+                            <constraint firstItem="sky-34" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-34-h"/>
+                            <constraint firstItem="sky-35" firstAttribute="top" secondItem="sky-34" secondAttribute="bottom" id="sky-35-t"/>
+                            <constraint firstItem="sky-35" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-35-l"/>
+                            <constraint firstItem="sky-35" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-35-r"/>
+                            <constraint firstItem="sky-35" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-35-h"/>
+                            <constraint firstItem="sky-36" firstAttribute="top" secondItem="sky-35" secondAttribute="bottom" id="sky-36-t"/>
+                            <constraint firstItem="sky-36" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-36-l"/>
+                            <constraint firstItem="sky-36" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-36-r"/>
+                            <constraint firstItem="sky-36" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-36-h"/>
+                            <constraint firstItem="sky-37" firstAttribute="top" secondItem="sky-36" secondAttribute="bottom" id="sky-37-t"/>
+                            <constraint firstItem="sky-37" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-37-l"/>
+                            <constraint firstItem="sky-37" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-37-r"/>
+                            <constraint firstItem="sky-37" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-37-h"/>
+                            <constraint firstItem="sky-38" firstAttribute="top" secondItem="sky-37" secondAttribute="bottom" id="sky-38-t"/>
+                            <constraint firstItem="sky-38" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-38-l"/>
+                            <constraint firstItem="sky-38" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-38-r"/>
+                            <constraint firstItem="sky-38" firstAttribute="height" secondItem="root-view" secondAttribute="height" multiplier="0.025000" id="sky-38-h"/>
+                            <constraint firstItem="sky-39" firstAttribute="top" secondItem="sky-38" secondAttribute="bottom" id="sky-39-t"/>
+                            <constraint firstItem="sky-39" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-39-l"/>
+                            <constraint firstItem="sky-39" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-39-r"/>
+                            <constraint firstItem="sky-39" firstAttribute="bottom" secondItem="root-view" secondAttribute="bottom" id="sky-39-b"/>
+                            <constraint firstItem="star-0" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.08" id="star-0-cx"/>
+                            <constraint firstItem="star-0" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.072" id="star-0-cy"/>
+                            <constraint firstItem="star-1" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.18" id="star-1-cx"/>
+                            <constraint firstItem="star-1" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.158" id="star-1-cy"/>
+                            <constraint firstItem="star-2" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.28" id="star-2-cx"/>
+                            <constraint firstItem="star-2" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.043" id="star-2-cy"/>
+                            <constraint firstItem="star-3" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.4" id="star-3-cx"/>
+                            <constraint firstItem="star-3" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.115" id="star-3-cy"/>
+                            <constraint firstItem="star-4" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.55" id="star-4-cx"/>
+                            <constraint firstItem="star-4" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.065" id="star-4-cy"/>
+                            <constraint firstItem="star-5" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.7" id="star-5-cx"/>
+                            <constraint firstItem="star-5" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.144" id="star-5-cy"/>
+                            <constraint firstItem="star-6" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.82" id="star-6-cx"/>
+                            <constraint firstItem="star-6" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.058" id="star-6-cy"/>
+                            <constraint firstItem="star-7" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.92" id="star-7-cx"/>
+                            <constraint firstItem="star-7" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.216" id="star-7-cy"/>
+                            <constraint firstItem="star-8" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.12" id="star-8-cx"/>
+                            <constraint firstItem="star-8" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.288" id="star-8-cy"/>
+                            <constraint firstItem="star-9" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.36" id="star-9-cx"/>
+                            <constraint firstItem="star-9" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.346" id="star-9-cy"/>
+                            <constraint firstItem="star-10" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.68" id="star-10-cx"/>
+                            <constraint firstItem="star-10" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.302" id="star-10-cy"/>
+                            <constraint firstItem="star-11" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.88" id="star-11-cx"/>
+                            <constraint firstItem="star-11" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.374" id="star-11-cy"/>
+                            <constraint firstItem="xpulse-label" firstAttribute="centerX" secondItem="root-view" secondAttribute="centerX" id="lbl-cx"/>
+                            <constraint firstItem="xpulse-label" firstAttribute="centerY" secondItem="root-view" secondAttribute="centerY" id="lbl-cy"/>
+                            <constraint firstItem="tagline-label" firstAttribute="centerX" secondItem="root-view" secondAttribute="centerX" id="tagline-cx"/>
+                            <constraint firstItem="tagline-label" firstAttribute="top" secondItem="xpulse-label" secondAttribute="bottom" constant="12" id="tagline-t"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -31,7 +428,4 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="LaunchImage" width="168" height="185"/>
-    </resources>
 </document>

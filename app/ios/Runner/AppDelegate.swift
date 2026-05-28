@@ -14,7 +14,15 @@ import HealthKit
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
+    // Match the LaunchScreen.storyboard background (#0B0420) so the hand-off
+    // from iOS launch image to Flutter's first frame doesn't flash a
+    // different color — FlutterViewController's view defaults to a dark grey
+    // which reads as "dark blue" against the launch image gradient.
+    let launchBg = UIColor(red: 0.0431, green: 0.0157, blue: 0.1255, alpha: 1.0)
+    window?.backgroundColor = launchBg
+
     if let controller = window?.rootViewController as? FlutterViewController {
+      controller.view.backgroundColor = launchBg
       channel = FlutterMethodChannel(
         name: "xpulse/background_sync",
         binaryMessenger: controller.binaryMessenger
