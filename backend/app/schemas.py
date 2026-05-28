@@ -83,6 +83,22 @@ class HealthStatus(BaseModel):
     env: str
 
 
+class SignupRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+    display_name: str = Field(min_length=1, max_length=255)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user_id: int
+
+
 class UserDetailsOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

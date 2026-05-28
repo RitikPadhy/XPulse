@@ -17,15 +17,36 @@ class StorageService {
   static const _lastSyncKey = 'xpulse.last_sync_at';
   static const _queueKey = 'xpulse.retry_queue';
   static const _permsAskedKey = 'xpulse.permissions_asked';
+  static const _ownedMarkerKey = 'xpulse.storage_owned';
 
   final _secure = const FlutterSecureStorage(
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
 
+  /// Call once at app startup, before anything reads the token.
+  ///
+  /// iOS Keychain entries survive app deletion by default — that means a
+  /// stranger reinstalling the app on the same phone would pick up the
+  /// previous user's session. We anchor "did this install put the token
+  /// there?" in SharedPreferences (which IS cleared on uninstall). Missing
+  /// marker = fresh install, so we wipe any leftover Keychain entries.
+  Future<void> ensureFreshInstallIsClean() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_ownedMarkerKey) == true) return;
+    await _secure.deleteAll();
+    await prefs.setBool(_ownedMarkerKey, true);
+  }
+
   Future<String?> getApiToken() => _secure.read(key: _tokenKey);
 
-  Future<void> setApiToken(String token) =>
-      _secure.write(key: _tokenKey, value: token);
+  Future<void> setApiToken(String token) async {
+    await _secure.write(key: _tokenKey, value: token);
+    // Defensive: also (re-)write the marker every time we save a token, so
+    // even if something cleared SharedPreferences mid-session we don't
+    // accidentally wipe the live token on the next launch.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_ownedMarkerKey, true);
+  }
 
   Future<void> clearApiToken() => _secure.delete(key: _tokenKey);
 

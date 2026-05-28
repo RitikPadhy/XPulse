@@ -31,6 +31,11 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     # 'REGULAR' for sign-ups, 'ADMIN' for hand-created test accounts
     role: Mapped[str] = mapped_column(String(16), nullable=False, default="REGULAR")
+    # bcrypt hash of the user's password; null for legacy users who only have
+    # the global API token.
+    password_hash: Mapped[str | None] = mapped_column(String(255))
+    # Per-user bearer token. Set on signup or first password login.
+    api_token: Mapped[str | None] = mapped_column(String(128), unique=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

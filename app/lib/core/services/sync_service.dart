@@ -45,7 +45,24 @@ class SyncService {
   /// Look-back window when no previous sync has happened.
   static const _initialLookback = Duration(days: 1);
 
-  Future<SyncOutcome> syncOnce() async {
+  /// In-flight de-duplication. If [syncOnce] is called while another sync is
+  /// already running, the caller gets the *same* Future back instead of
+  /// firing a second POST. This is what collapses the ~10 HKObserverQuery
+  /// callbacks that fire in a burst on app launch into one round-trip.
+  Future<SyncOutcome>? _inFlight;
+
+  Future<SyncOutcome> syncOnce() {
+    final existing = _inFlight;
+    if (existing != null) return existing;
+    final fresh = _doSyncOnce();
+    _inFlight = fresh;
+    fresh.whenComplete(() {
+      if (identical(_inFlight, fresh)) _inFlight = null;
+    });
+    return fresh;
+  }
+
+  Future<SyncOutcome> _doSyncOnce() async {
     final now = DateTime.now();
     final since =
         (await _storage.getLastSyncAt()) ?? now.subtract(_initialLookback);

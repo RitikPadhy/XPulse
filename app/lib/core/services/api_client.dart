@@ -32,6 +32,21 @@ class ApiException implements Exception {
   String toString() => 'ApiException($statusCode): $message';
 }
 
+/// Thrown when the backend returns 401. AppShell pivots to the auth screen
+/// on this signal instead of hanging on a loading state.
+class UnauthenticatedException implements Exception {
+  UnauthenticatedException([this.message = 'not signed in']);
+  final String message;
+  @override
+  String toString() => message;
+}
+
+class AuthResult {
+  AuthResult({required this.token, required this.userId});
+  final String token;
+  final int userId;
+}
+
 /// Talks to the XPulse FastAPI backend.
 ///
 /// Reads the bearer token from secure storage on every call. POSTs retry up
@@ -57,6 +72,56 @@ class ApiClient {
     return r.statusCode == 200;
   }
 
+  /// POST /v1/auth/signup — creates a REGULAR user, returns a per-user token.
+  Future<AuthResult> signup({
+    required String email,
+    required String password,
+    required String displayName,
+  }) async {
+    final r = await _http.post(
+      Uri.parse('$_baseUrl/v1/auth/signup'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+      }),
+    );
+    if (r.statusCode == 201 || r.statusCode == 200) {
+      final j = jsonDecode(r.body) as Map<String, dynamic>;
+      return AuthResult(token: j['token'] as String, userId: j['user_id'] as int);
+    }
+    throw ApiException(r.statusCode, _errorMessage(r.body));
+  }
+
+  /// POST /v1/auth/login — exchanges email+password for the user's token.
+  Future<AuthResult> login({
+    required String email,
+    required String password,
+  }) async {
+    final r = await _http.post(
+      Uri.parse('$_baseUrl/v1/auth/login'),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    if (r.statusCode >= 200 && r.statusCode < 300) {
+      final j = jsonDecode(r.body) as Map<String, dynamic>;
+      return AuthResult(token: j['token'] as String, userId: j['user_id'] as int);
+    }
+    if (r.statusCode == 401) {
+      throw UnauthenticatedException('invalid email or password');
+    }
+    throw ApiException(r.statusCode, _errorMessage(r.body));
+  }
+
+  String _errorMessage(String body) {
+    try {
+      final j = jsonDecode(body);
+      if (j is Map && j['detail'] is String) return j['detail'] as String;
+    } catch (_) {}
+    return body;
+  }
+
   /// GET /v1/me/snapshot — the one read endpoint that powers all three pages
   /// (user, today, quests, friends).
   Future<UserSnapshot> getSnapshot() async {
@@ -73,7 +138,7 @@ class ApiClient {
   Future<String> _authed(String method, String path, {Object? body}) async {
     final token = await _storage.getApiToken();
     if (token == null || token.isEmpty) {
-      throw ApiException(401, 'no api token configured');
+      throw UnauthenticatedException('no token in storage');
     }
     final headers = {
       'Authorization': 'Bearer $token',
@@ -91,7 +156,8 @@ class ApiClient {
         .timeout(const Duration(seconds: 15));
 
     if (r.statusCode >= 200 && r.statusCode < 300) return r.body;
-    throw ApiException(r.statusCode, r.body);
+    if (r.statusCode == 401) throw UnauthenticatedException(_errorMessage(r.body));
+    throw ApiException(r.statusCode, _errorMessage(r.body));
   }
 
   /// POST /v1/samples with retries. Throws [ApiException] after all attempts

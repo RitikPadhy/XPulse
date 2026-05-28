@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import me, samples, snapshot, system
+from app.api import auth, me, samples, snapshot, system
 from app.config import get_settings
 from app.db import Base, engine
 from app import models  # noqa: F401  (register mappers before create_all)
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(system.router)
+    app.include_router(auth.router)
     app.include_router(me.router)
     app.include_router(snapshot.router)
     app.include_router(samples.router)
