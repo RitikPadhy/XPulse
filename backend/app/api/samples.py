@@ -23,9 +23,14 @@ def ingest(
     if received == 0:
         return IngestResponse(received=0, inserted=0, duplicates=0)
 
-    rows = [
-        {"user_id": user.id, **sample.model_dump()} for sample in payload.samples
-    ]
+    rows = []
+    for sample in payload.samples:
+        data = sample.model_dump()
+        # SQLAlchemy attribute is `metadata_` (DB column is `metadata`)
+        if "metadata" in data:
+            data["metadata_"] = data.pop("metadata")
+        rows.append({"user_id": user.id, **data})
+
     stmt = (
         pg_insert(HealthSample)
         .values(rows)
