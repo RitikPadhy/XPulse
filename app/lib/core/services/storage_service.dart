@@ -16,6 +16,7 @@ class StorageService {
   static const _tokenKey = 'xpulse.api_token';
   static const _lastSyncKey = 'xpulse.last_sync_at';
   static const _queueKey = 'xpulse.retry_queue';
+  static const _permsAskedKey = 'xpulse.permissions_asked';
 
   final _secure = const FlutterSecureStorage(
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
@@ -65,5 +66,15 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_lastSyncKey);
     await prefs.remove(_queueKey);
+  }
+
+  Future<bool> getPermissionsAsked() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_permsAskedKey) ?? false;
+  }
+
+  Future<void> setPermissionsAsked() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_permsAskedKey, true);
   }
 }
