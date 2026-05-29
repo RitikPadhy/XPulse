@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Local build-time secrets/config (real backend URL). Use dart_defines.example.json as a template.
-dart_defines.json
+# Local backend URL / secrets. Copy .env.example -> .env and fill it in.
+.env

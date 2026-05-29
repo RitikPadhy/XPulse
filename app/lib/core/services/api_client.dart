@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/user_snapshot.dart';
@@ -33,15 +34,11 @@ class AuthResult {
 /// Reads the bearer token from secure storage on every call. POSTs retry up
 /// to 3 total attempts with exponential backoff before throwing.
 class ApiClient {
-  /// Backend base URL — never hardcoded in source. Injected at build/run time:
-  ///   flutter run  --dart-define-from-file=dart_defines.json
-  ///   flutter build ... --dart-define=XPULSE_API_BASE_URL=https://api.example
-  /// Falls back to localhost so a missing define fails fast & obviously in dev
-  /// instead of silently hitting production.
-  static const _envBaseUrl = String.fromEnvironment(
-    'XPULSE_API_BASE_URL',
-    defaultValue: 'http://localhost:8000',
-  );
+  /// Backend base URL — read from the gitignored `.env` (`XPULSE_API_BASE_URL`),
+  /// loaded in `main()`. Always the deployed host, even in local dev — there is
+  /// deliberately NO localhost fallback. If `.env` is missing the value is
+  /// empty and requests fail loudly instead of silently hitting localhost.
+  static String get _envBaseUrl => dotenv.env['XPULSE_API_BASE_URL'] ?? '';
 
   ApiClient({String? baseUrl, StorageService? storage, http.Client? httpClient})
     : _baseUrl = baseUrl ?? _envBaseUrl,
@@ -126,11 +123,16 @@ class ApiClient {
   Future<void> syncQuests({
     required Map<String, double> baselines,
     required Map<String, double> totals,
+    String? tz,
   }) async {
     await _authed(
       'POST',
       '/v1/me/quests/sync',
-      body: {'baselines': baselines, 'totals': totals},
+      body: {
+        'baselines': baselines,
+        'totals': totals,
+        if (tz != null) 'tz': tz,
+      },
     );
   }
 

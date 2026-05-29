@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 
 import '../core/app_state.dart';
 import '../core/models/user_snapshot.dart';
@@ -156,7 +157,18 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     try {
       final baselines = await _health.computeBaseline();
       final totals = await _health.computeTodayTotals();
-      await ApiClient().syncQuests(baselines: baselines, totals: totals);
+      // Report the device timezone (a location, not a time) once per session,
+      // so the server's noon-lock / midnight-reset use the user's local day.
+      // The clock itself is always the server's — the phone clock is ignored.
+      String? tz;
+      try {
+        tz = (await FlutterTimezone.getLocalTimezone()).identifier;
+      } catch (_) {}
+      await ApiClient().syncQuests(
+        baselines: baselines,
+        totals: totals,
+        tz: tz,
+      );
       final snap = await UserRepository().loadCurrent();
       if (!mounted) return;
       setState(() => _snapshot = snap);
