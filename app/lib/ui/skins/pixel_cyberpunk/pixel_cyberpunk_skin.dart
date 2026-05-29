@@ -1104,7 +1104,9 @@ class _QuestPickerTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${quest.current} / ${quest.target} ${quest.metric}',
+                      '${quest.current} / ${quest.target}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: _mono(p.textMuted, size: 10),
                     ),
                   ],

@@ -268,8 +268,10 @@ def serialize_pool(user: User, quests: list[UserQuest]) -> dict:
                 "id": str(q.id),
                 "title": q.catalog.title,
                 "metric": q.catalog.metric,
-                "target": q.target_value,
-                "current": q.progress_value,
+                # Rounded to 1 decimal for display; full precision is kept
+                # internally for XP math.
+                "target": round(q.target_value, 1),
+                "current": round(q.progress_value, 1),
                 # Active quests show their normalized 1000-budget slice;
                 # available quests show their indicative difficulty value.
                 "xpReward": xpmap[q.id] if is_active else int(q.catalog.xp_reward),
