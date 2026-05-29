@@ -51,18 +51,12 @@ class _AppShellState extends State<AppShell> {
   /// [UnauthenticatedException] → [AuthScreen]; any other error → retryable
   /// error view. 200 → Home.
   Future<void> _load() async {
-    debugPrint('[XPULSE] _load: start');
     try {
       await _storage.ensureFreshInstallIsClean();
-      // TEMP (auth dev): force the AuthScreen by wiping any saved token on
-      // every launch. REMOVE this line when done testing the auth flow.
-      await _storage.clearApiToken();
-      debugPrint('[XPULSE] _load: token after clear = ${await _storage.getApiToken()}');
       // Ask for HealthKit access up front — before sign-in — so the system
       // sheet appears at launch, not after auth.
       await _ensureHealthPermissions();
       final snap = await UserRepository().loadCurrent();
-      debugPrint('[XPULSE] _load: snapshot OK -> Home');
       if (!mounted) return;
       setState(() {
         _snapshot = snap;
@@ -71,8 +65,6 @@ class _AppShellState extends State<AppShell> {
       });
       _bootstrapHealth();
     } catch (e) {
-      debugPrint('[XPULSE] _load: caught ${e.runtimeType} -> '
-          '${e is UnauthenticatedException ? "AuthScreen" : "error view"}: $e');
       if (!mounted) return;
       setState(() {
         _error = e;
