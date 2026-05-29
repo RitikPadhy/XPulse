@@ -51,10 +51,19 @@ import HealthKit
         binaryMessenger: controller.binaryMessenger
       )
       splashChannel.setMethodCallHandler { [weak self] call, result in
-        if call.method == "remove" {
-          self?.removeSplashOverlay()
+        guard let self = self else { result(false); return }
+        switch call.method {
+        case "remove":
+          self.removeSplashOverlay()
           result(true)
-        } else {
+        case "show":
+          // Re-show the launch overlay (used when Dart restarts the flow on
+          // returning from the background).
+          if let c = self.window?.rootViewController as? FlutterViewController {
+            self.installSplashOverlay(over: c)
+          }
+          result(true)
+        default:
           result(FlutterMethodNotImplemented)
         }
       }
@@ -66,6 +75,7 @@ import HealthKit
   /// Adds the launch storyboard's view on top of the Flutter view, so what the
   /// user saw at launch keeps showing seamlessly until Dart calls "remove".
   private func installSplashOverlay(over controller: FlutterViewController) {
+    guard splashOverlay == nil else { return } // already showing
     guard let splashVC = UIStoryboard(name: "LaunchScreen", bundle: nil)
       .instantiateInitialViewController(),
       let splashView = splashVC.view else { return }

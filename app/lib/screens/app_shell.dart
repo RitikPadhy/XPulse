@@ -24,7 +24,7 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   /// Native side keeps the launch screen on top until we call "remove".
   static const _splashChannel = MethodChannel('xpulse/splash');
 
@@ -32,6 +32,9 @@ class _AppShellState extends State<AppShell> {
   Object? _error;
   bool _loading = true;
   bool _retrying = false;
+  // True while the app is backgrounded, so we can detect a background→resume
+  // transition and restart the launch flow.
+  bool _backgrounded = false;
 
   final _controller = PageController(initialPage: 1);
   final _storage = StorageService.instance;
@@ -42,7 +45,33 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     BackgroundSync.register(_sync);
+    _load();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _backgrounded = true;
+    } else if (state == AppLifecycleState.resumed && _backgrounded) {
+      _backgrounded = false;
+      _restartFromSplash();
+    }
+  }
+
+  /// Coming back from the background: re-show the launch overlay and re-run
+  /// the startup flow, so the app always begins at the launcher rather than
+  /// resuming on whatever page it was last showing.
+  Future<void> _restartFromSplash() async {
+    await _splashChannel.invokeMethod('show');
+    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _snapshot = null;
+      _error = null;
+    });
     _load();
   }
 
@@ -86,6 +115,7 @@ class _AppShellState extends State<AppShell> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     super.dispose();
   }
