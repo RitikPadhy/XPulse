@@ -24,17 +24,18 @@ class SideQuestsScreen extends StatelessWidget {
                 label:
                     'Active  (${active.length} / ${AppState.maxActiveQuests})',
               ),
-              if (active.isEmpty)
-                _EmptyLine(text: 'Pick up to 4 below.')
-              else
-                ...active.map(
-                  (q) => c.questPickerTile(
-                    quest: q,
-                    isActive: true,
-                    canActivate: false,
-                    onTap: () => state.deactivate(q.id),
-                  ),
+              if (state.locked)
+                _EmptyLine(text: 'Locked in for today — resets at midnight.')
+              else if (active.isEmpty)
+                _EmptyLine(text: 'Pick up to 4 below — lock in by noon.'),
+              ...active.map(
+                (q) => c.questPickerTile(
+                  quest: q,
+                  isActive: true,
+                  canActivate: false,
+                  onTap: state.locked ? () {} : () => state.deactivate(q.id),
                 ),
+              ),
               c.sectionHeader(label: 'Available'),
               if (available.isEmpty)
                 _EmptyLine(text: 'No more quests available today.')
@@ -43,8 +44,8 @@ class SideQuestsScreen extends StatelessWidget {
                   (q) => c.questPickerTile(
                     quest: q,
                     isActive: false,
-                    canActivate: !state.isFull,
-                    onTap: () => state.activate(q.id),
+                    canActivate: !state.isFull && !state.locked,
+                    onTap: state.locked ? () {} : () => state.activate(q.id),
                   ),
                 ),
             ],

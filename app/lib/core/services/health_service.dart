@@ -12,13 +12,6 @@ class HealthService {
   final Health _h;
   late final Future<void> _ready;
 
-  /// Whether HealthKit has granted us read access for *all* v1 types.
-  /// Returns null on iOS for unknown state (Apple intentionally hides this).
-  Future<bool?> hasAllPermissions() async {
-    await _ready;
-    return _h.hasPermissions(v1HealthTypes, permissions: v1HealthPermissions);
-  }
-
   /// Triggers the iOS permission sheet for any types not yet granted.
   /// Returns true if the OS-level request completed (not "granted" — Apple
   /// won't tell us).
@@ -30,33 +23,72 @@ class HealthService {
     );
   }
 
-  /// Reads samples between [start] and [end] (exclusive of [end]).
-  Future<List<HealthDataPoint>> fetchRange({
-    required DateTime start,
-    required DateTime end,
-  }) async {
+  /// Per-metric 7-day baseline = median of daily totals, keyed by the
+  /// HealthKit type name (matches the backend quest catalog metrics). Computed
+  /// entirely on-device; only this summary is sent to the server — the raw
+  /// history is never stored.
+  Future<Map<String, double>> computeBaseline() async {
     await _ready;
-    final points = await _h.getHealthDataFromTypes(
-      types: v1HealthTypes,
-      startTime: start,
-      endTime: end,
+    final now = DateTime.now();
+    final start = now.subtract(const Duration(days: 7));
+    final points = _h.removeDuplicates(
+      await _h.getHealthDataFromTypes(
+        types: v1HealthTypes,
+        startTime: start,
+        endTime: now,
+      ),
     );
-    return _h.removeDuplicates(points);
+
+    // type -> (yyyy-mm-dd -> summed total that day)
+    final byTypeDay = <String, Map<String, double>>{};
+    for (final p in points) {
+      final v = p.value;
+      if (v is! NumericHealthValue) continue;
+      final d = p.dateFrom.toLocal();
+      final dayKey = '${d.year}-${d.month}-${d.day}';
+      (byTypeDay[p.type.name] ??= {}).update(
+        dayKey,
+        (x) => x + v.numericValue.toDouble(),
+        ifAbsent: () => v.numericValue.toDouble(),
+      );
+    }
+
+    final out = <String, double>{};
+    byTypeDay.forEach((type, days) {
+      final totals = days.values.toList()..sort();
+      if (totals.isEmpty) return;
+      final mid = totals.length ~/ 2;
+      final median = totals.length.isOdd
+          ? totals[mid]
+          : (totals[mid - 1] + totals[mid]) / 2;
+      if (median > 0) out[type] = median;
+    });
+    return out;
   }
 
-  /// Converts a [HealthDataPoint] to the JSON shape backend expects.
-  /// Returns null for points whose value isn't a simple number.
-  static Map<String, dynamic>? toSampleJson(HealthDataPoint p) {
-    final value = p.value;
-    if (value is! NumericHealthValue) return null;
-    return {
-      'type': p.type.name,
-      'value': value.numericValue.toDouble(),
-      'unit': p.unit.name,
-      'start_date': p.dateFrom.toUtc().toIso8601String(),
-      'end_date': p.dateTo.toUtc().toIso8601String(),
-      'source': p.sourceName,
-      'device': p.sourceDeviceId,
-    };
+  /// Today's summed total per metric (local day), keyed by HealthKit type
+  /// name. Sent to the server as progress — no raw samples leave the device.
+  Future<Map<String, double>> computeTodayTotals() async {
+    await _ready;
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, now.day); // local midnight
+    final points = _h.removeDuplicates(
+      await _h.getHealthDataFromTypes(
+        types: v1HealthTypes,
+        startTime: start,
+        endTime: now,
+      ),
+    );
+    final out = <String, double>{};
+    for (final p in points) {
+      final v = p.value;
+      if (v is! NumericHealthValue) continue;
+      out.update(
+        p.type.name,
+        (x) => x + v.numericValue.toDouble(),
+        ifAbsent: () => v.numericValue.toDouble(),
+      );
+    }
+    return out;
   }
 }

@@ -132,7 +132,15 @@ class QuestBook {
   final List<String> initialActiveIds;
   final List<Quest> pool;
 
-  QuestBook({required this.initialActiveIds, required this.pool});
+  /// Server-authoritative: once the user's local day passes noon the active
+  /// set is frozen for the day. The app uses this to disable swapping.
+  final bool locked;
+
+  QuestBook({
+    required this.initialActiveIds,
+    required this.pool,
+    this.locked = false,
+  });
 
   Quest? byId(String id) {
     for (final q in pool) {
@@ -148,6 +156,7 @@ class QuestBook {
     pool: (json['pool'] as List)
         .map((e) => Quest.fromJson(e as Map<String, dynamic>))
         .toList(),
+    locked: json['locked'] as bool? ?? false,
   );
 }
 

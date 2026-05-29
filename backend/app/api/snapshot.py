@@ -18,14 +18,19 @@ from app.db import get_db
 from app.models import User, UserDetail, UserQuest, UserXpDaily
 from app.quests import (
     ACTIVE_SLOTS,
+    DAILY_XP_BUDGET,
+    _user_tz,
     get_or_assign_pool,
+    is_locked,
     refresh_progress,
     serialize_pool,
+    today_earned,
 )
 from app.schemas import (
     DailyXp,
     FriendSummary,
     MeOut,
+    QuestSyncRequest,
     SnapshotOut,
     UserPublicOut,
 )
@@ -71,23 +76,24 @@ def _friend_rows(
     return [tuple(row) for row in db.execute(stmt).all()]
 
 
-def _stub_today() -> dict[str, Any]:
-    """Default `today` block — matches sample_user.json shape so the
-    existing UserSnapshot.fromJson parser is happy."""
+def _today_block(user: User, earned: int) -> dict[str, Any]:
+    """Real `today` block: proportional XP earned so far today, against the
+    fixed 1000 daily budget. Date is the user's LOCAL date."""
+    local_date = datetime.now(_user_tz(user)).date()
     return {
-        "date": _today().isoformat(),
+        "date": local_date.isoformat(),
         "metrics": {},
         "xp": {
-            "earned": 0,
-            "dailyGoal": 1000,
+            "earned": earned,
+            "dailyGoal": DAILY_XP_BUDGET,
             "criticalStrikes": 0,
         },
     }
 
 
 def _empty_quests() -> dict[str, Any]:
-    """Returned when a user has no health samples yet — nothing to compute a baseline from."""
-    return {"activeIds": [], "pool": []}
+    """Returned before the app has sent its baseline — no pool yet."""
+    return {"activeIds": [], "pool": [], "locked": False, "lockAtUtc": None}
 
 
 @router.get("/me/snapshot", response_model=SnapshotOut)
@@ -101,12 +107,12 @@ def get_snapshot(
         db.commit()
         db.refresh(user)
 
-    # Quests: load (or generate) this user's 10-quest pool, then refresh
-    # progress from the latest health samples and auto-grant XP for any
-    # that crossed their target.
-    pool = get_or_assign_pool(db, user.id)
-    refresh_progress(db, pool)
-    quests_block = serialize_pool(pool) if pool else _empty_quests()
+    # Quests: serve the current pool + the XP already banked today. Progress
+    # itself is only recomputed when the app POSTs fresh totals (see
+    # /me/quests/sync) — we never store or recompute from raw samples here.
+    pool = get_or_assign_pool(db, user)
+    earned = today_earned(db, user)
+    quests_block = serialize_pool(user, pool) if pool else _empty_quests()
 
     rows = _friend_rows(db, viewer_id=user.id)
     friends = [
@@ -125,9 +131,33 @@ def get_snapshot(
     return SnapshotOut(
         me=MeOut.model_validate(user),
         friends=friends,
-        today=_stub_today(),
+        today=_today_block(user, earned),
         quests=quests_block,
     )
+
+
+@router.post("/me/quests/sync")
+def sync_quests(
+    payload: QuestSyncRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """The app sends two on-device summaries — nothing raw is stored:
+      - `baselines`: 7-day per-metric medians → used to generate today's pool
+        (only if one doesn't exist yet).
+      - `totals`: today's per-metric totals → progress → proportional daily XP.
+    HealthKit stays the source of truth. Returns the fresh quests + today XP."""
+    if user.details is None:
+        user.details = UserDetail(user_id=user.id)
+        db.commit()
+        db.refresh(user)
+
+    pool = get_or_assign_pool(db, user, baselines=payload.baselines)
+    earned = refresh_progress(db, user, pool, payload.totals) if pool else 0
+    return {
+        "quests": serialize_pool(user, pool) if pool else _empty_quests(),
+        "today": _today_block(user, earned),
+    }
 
 
 @router.post("/me/quests/{quest_id}/activate")
@@ -138,7 +168,12 @@ def activate_quest(
 ) -> dict:
     """Move a quest from 'available' shelf to 'active'. If the user already
     has 4 active quests, the most-recently-assigned one is pushed to
-    'available' to make room (so the count stays at 4)."""
+    'available' to make room (so the count stays at 4).
+
+    Rejected once the user's local day has passed noon — the active set is
+    locked for the rest of the day (server-side, can't be spoofed)."""
+    if is_locked(user):
+        raise HTTPException(status_code=409, detail="quests locked for today")
     q = db.scalar(
         select(UserQuest).where(
             UserQuest.id == quest_id,
@@ -176,6 +211,8 @@ def deactivate_quest(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
+    if is_locked(user):
+        raise HTTPException(status_code=409, detail="quests locked for today")
     q = db.scalar(
         select(UserQuest).where(
             UserQuest.id == quest_id,

@@ -1,165 +1,156 @@
-"""Quest engine: baselines → recommendation → progress → XP grant.
+"""Quest engine: on-device baseline → 12-quest pool → 4 active = 1000 XP →
+proportional progress → daily/total XP.
 
-How a user gets quests:
+Day model (per user, in their LOCAL timezone, evaluated server-side so the
+phone clock can't be used to cheat):
 
-1. On `GET /v1/me/snapshot`, we look for a non-expired pool of size 10
-   (4 active + 6 available). If missing, we generate a fresh pool.
-2. Targets are computed from the user's 7-day baseline per metric:
-   `target = baseline_median × stretch_factor[tier]`
-3. Active slot defaults to one Medium quest per distinct metric (up to 4).
-   Available slot holds the rest (Easy/Hard/Epic variants + extra metrics).
-4. Each snapshot fetch also refreshes `progress_value` for every quest by
-   summing matching health samples in the quest's window. Any quest whose
-   progress hits its target is auto-completed and the XP is credited to
-   `user_xp_daily` for today.
+  - local midnight → the day's pool of 12 is generated; selection unlocked.
+  - local noon     → the 4 active quests AUTO-LOCK; no more swaps until reset.
+  - quest window   = the user's full local day (midnight → midnight), stored UTC.
 
-Quests stay around until `expires_at`. For daily quests that's midnight
-UTC of the day after assignment.
+Baselines are computed on-device from the last 7 days of HealthKit data and
+sent to the server as a per-metric summary — we never store the raw history.
+
+XP:
+  - Each catalog tier carries a difficulty weight (`xp_reward`). The 4 ACTIVE
+    quests are normalized so their weights sum to exactly DAILY_XP_BUDGET
+    (1000) — harder quest → bigger slice (fair).
+  - Daily XP earned = Σ over active quests of  min(progress/target, 1) × xp,
+    i.e. proportional to how full each bar is. Capped at 1000.
+  - total XP = Σ of every day's earned (user_xp_daily).
 """
 
-from datetime import date, datetime, timedelta, timezone
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models import HealthSample, QuestCatalog, UserQuest, UserXpDaily
+from app.models import QuestCatalog, User, UserQuest, UserXpDaily
 
-POOL_SIZE = 10
+POOL_SIZE = 12
 ACTIVE_SLOTS = 4
+DAILY_XP_BUDGET = 1000
+LOCK_HOUR = 12  # local noon
 
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _quest_window(duration: str) -> tuple[datetime, datetime]:
-    """Returns (starts_at, expires_at) UTC for a freshly assigned quest."""
-    now = _utc_now()
-    day_start = datetime.combine(now.date(), datetime.min.time(), tzinfo=timezone.utc)
-    days = {"daily": 1, "streak3": 3, "weekly": 7, "monthly": 30}.get(duration, 1)
-    return day_start, day_start + timedelta(days=days)
+# ---------------------------------------------------------------- timezone / day
+
+def _user_tz(user: User) -> ZoneInfo:
+    name = (user.details.timezone if user.details else None) or "UTC"
+    try:
+        return ZoneInfo(name)
+    except Exception:
+        return ZoneInfo("UTC")
 
 
-def compute_baselines(db: Session, user_id: int) -> dict[str, float]:
-    """Median daily total per metric across the last 7 days."""
-    since = _utc_now() - timedelta(days=7)
-    per_day = (
-        select(
-            HealthSample.type.label("type"),
-            func.date(HealthSample.start_date).label("day"),
-            func.sum(HealthSample.value_quantity).label("daily_total"),
-        )
-        .where(
-            HealthSample.user_id == user_id,
-            HealthSample.start_date >= since,
-            HealthSample.value_quantity.isnot(None),
-        )
-        .group_by(HealthSample.type, "day")
-        .subquery()
-    )
-    stmt = (
-        select(
-            per_day.c.type,
-            func.percentile_cont(0.5).within_group(per_day.c.daily_total).label("median"),
-        )
-        .group_by(per_day.c.type)
-    )
-    return {
-        row.type: float(row.median)
-        for row in db.execute(stmt).all()
-        if row.median is not None and row.median > 0
-    }
+def day_bounds(tz: ZoneInfo) -> tuple[datetime, datetime, datetime]:
+    """(start_utc, end_utc, lock_utc) for the user's current local day."""
+    local = datetime.now(tz)
+    midnight = local.replace(hour=0, minute=0, second=0, microsecond=0)
+    start = midnight.astimezone(timezone.utc)
+    end = (midnight + timedelta(days=1)).astimezone(timezone.utc)
+    lock = midnight.replace(hour=LOCK_HOUR).astimezone(timezone.utc)
+    return start, end, lock
 
 
-def _progress_for(
-    db: Session, user_id: int, metric: str, start: datetime, end: datetime
-) -> float:
-    total = db.scalar(
-        select(func.coalesce(func.sum(HealthSample.value_quantity), 0)).where(
-            HealthSample.user_id == user_id,
-            HealthSample.type == metric,
-            HealthSample.start_date >= start,
-            HealthSample.start_date < end,
-        )
-    )
-    return float(total or 0)
+def is_locked(user: User) -> bool:
+    """True once the user's local time is at/past noon — active set is frozen."""
+    return datetime.now(_user_tz(user)).hour >= LOCK_HOUR
 
 
-def _generate_pool(db: Session, user_id: int) -> list[UserQuest]:
-    """Build a fresh 10-quest pool for the user. Persists & returns the rows."""
-    baselines = compute_baselines(db, user_id)
-    if not baselines:
-        return []
+# ---------------------------------------------------------------- fair XP split
 
-    catalog: list[QuestCatalog] = list(
+def active_xp_map(active_quests: list[UserQuest]) -> dict[int, int]:
+    """quest.id → XP, where the active set sums to exactly DAILY_XP_BUDGET.
+
+    Each quest's slice is proportional to its catalog difficulty weight
+    (`xp_reward`), so harder quests are worth more. Rounding drift is folded
+    into the first quest so the total is always exactly 1000.
+    """
+    if not active_quests:
+        return {}
+    weights = {q.id: max(int(q.catalog.xp_reward), 1) for q in active_quests}
+    total = sum(weights.values()) or 1
+    xp = {qid: round(DAILY_XP_BUDGET * w / total) for qid, w in weights.items()}
+    drift = DAILY_XP_BUDGET - sum(xp.values())
+    if drift:
+        first = next(iter(xp))
+        xp[first] += drift
+    return xp
+
+
+# ---------------------------------------------------------------- generation
+
+def _candidates(
+    db: Session, baselines: dict[str, float]
+) -> list[tuple[QuestCatalog, float]]:
+    catalog = list(
         db.scalars(select(QuestCatalog).where(QuestCatalog.is_active.is_(True))).all()
     )
-
-    # Build candidates: only metrics where we have baseline data
-    candidates: list[tuple[QuestCatalog, float]] = []
+    out: list[tuple[QuestCatalog, float]] = []
     for entry in catalog:
         baseline = baselines.get(entry.metric)
-        if baseline is None:
+        if baseline is None or baseline <= 0:
             continue
-        target = baseline * entry.stretch_factor
-        candidates.append((entry, target))
+        out.append((entry, baseline * entry.stretch_factor))
+    return out
 
-    # ACTIVE: one Medium quest per distinct metric (up to 4 metrics)
-    active: list[tuple[QuestCatalog, float]] = []
-    used_metrics: set[str] = set()
-    for entry, target in candidates:
-        if entry.tier == "medium" and entry.metric not in used_metrics:
-            active.append((entry, target))
-            used_metrics.add(entry.metric)
-            if len(active) >= ACTIVE_SLOTS:
-                break
 
-    # AVAILABLE: fill remaining slots with non-medium tiers and unused metrics
-    active_ids = {id(c[0]) for c in active}
-    available: list[tuple[QuestCatalog, float]] = []
-    # First, Hard tier for the active metrics (lets users escalate)
-    for entry, target in candidates:
-        if id(entry) in active_ids:
-            continue
-        if entry.metric in used_metrics and entry.tier in ("hard", "epic"):
-            available.append((entry, target))
-            if len(available) >= POOL_SIZE - len(active):
-                break
-    # Then Easy for the active metrics (downshift option)
-    for entry, target in candidates:
-        if id(entry) in active_ids or (entry, target) in available:
-            continue
-        if entry.metric in used_metrics and entry.tier == "easy":
-            available.append((entry, target))
-            if len(available) >= POOL_SIZE - len(active):
-                break
-    # Then any Medium quests on unused metrics (extra variety)
-    for entry, target in candidates:
-        if id(entry) in active_ids or (entry, target) in available:
-            continue
-        if entry.tier == "medium" and entry.metric not in used_metrics:
-            available.append((entry, target))
-            if len(available) >= POOL_SIZE - len(active):
-                break
+def _generate_pool(
+    db: Session, user: User, baselines: dict[str, float]
+) -> list[UserQuest]:
+    """Build a fresh 12-quest pool (4 active + 8 available) for the user's day."""
+    cands = _candidates(db, baselines)
+    if not cands:
+        return []
+    start, end, _ = day_bounds(_user_tz(user))
 
-    # Persist
-    rows: list[UserQuest] = []
-    for entry, target in active:
-        s, e = _quest_window(entry.duration)
-        rows.append(
-            UserQuest(
-                user_id=user_id, catalog_id=entry.id, slot="active",
-                target_value=target, starts_at=s, expires_at=e,
-            )
+    # ACTIVE: one Medium quest per distinct metric (up to 4).
+    chosen: list[tuple[QuestCatalog, float, str]] = []
+    used: set[str] = set()
+    for entry, target in cands:
+        if entry.tier == "medium" and entry.metric not in used:
+            chosen.append((entry, target, "active"))
+            used.add(entry.metric)
+            if len(chosen) >= ACTIVE_SLOTS:
+                break
+    # Backfill active with any tier on unused metrics if we lack 4 mediums.
+    if len(chosen) < ACTIVE_SLOTS:
+        for entry, target in cands:
+            if entry.metric not in used:
+                chosen.append((entry, target, "active"))
+                used.add(entry.metric)
+                if len(chosen) >= ACTIVE_SLOTS:
+                    break
+
+    chosen_ids = {id(e) for e, _, _ in chosen}
+    # AVAILABLE: fill the rest of the pool with the remaining variants.
+    for entry, target in cands:
+        if len(chosen) >= POOL_SIZE:
+            break
+        if id(entry) in chosen_ids:
+            continue
+        chosen.append((entry, target, "available"))
+        chosen_ids.add(id(entry))
+
+    rows = [
+        UserQuest(
+            user_id=user.id,
+            catalog_id=entry.id,
+            slot=slot,
+            target_value=target,
+            starts_at=start,
+            expires_at=end,
         )
-    for entry, target in available:
-        s, e = _quest_window(entry.duration)
-        rows.append(
-            UserQuest(
-                user_id=user_id, catalog_id=entry.id, slot="available",
-                target_value=target, starts_at=s, expires_at=e,
-            )
-        )
+        for entry, target, slot in chosen
+    ]
     db.add_all(rows)
     db.commit()
     for r in rows:
@@ -167,21 +158,23 @@ def _generate_pool(db: Session, user_id: int) -> list[UserQuest]:
     return rows
 
 
-def get_or_assign_pool(db: Session, user_id: int) -> list[UserQuest]:
-    """Returns the user's current non-expired quest pool. Generates one if
-    none exists. Also expires stale rows."""
+def get_or_assign_pool(
+    db: Session, user: User, baselines: dict[str, float] | None = None
+) -> list[UserQuest]:
+    """Return the user's current (non-expired) pool. Expire stale rows. Only
+    generate a new pool when there is none AND a fresh baseline was supplied
+    (i.e. the app just sent its 7-day summary)."""
     now = _utc_now()
-    existing: list[UserQuest] = list(
+    existing = list(
         db.scalars(
             select(UserQuest)
-            .where(UserQuest.user_id == user_id, UserQuest.status != "expired")
+            .where(UserQuest.user_id == user.id, UserQuest.status != "expired")
             .order_by(UserQuest.assigned_at.desc())
         ).all()
     )
 
-    # Mark anything past its expires_at as expired (snapshot won't return them)
-    fresh = []
     dirty = False
+    fresh: list[UserQuest] = []
     for q in existing:
         if q.expires_at <= now and q.status != "expired":
             q.status = "expired"
@@ -192,61 +185,148 @@ def get_or_assign_pool(db: Session, user_id: int) -> list[UserQuest]:
     if dirty:
         db.commit()
 
-    if len(fresh) >= POOL_SIZE:
+    if fresh:
         return fresh
+    if baselines:
+        return _generate_pool(db, user, baselines)
+    return []
 
-    return _generate_pool(db, user_id)
 
+# ---------------------------------------------------------------- progress → XP
 
-def refresh_progress(db: Session, quests: list[UserQuest]) -> int:
-    """For each in-progress quest, update progress_value from health_samples.
-    If progress >= target, auto-complete and credit XP to today's row.
-    Returns total XP granted in this call."""
-    now = _utc_now()
-    today = now.date()
-    total_xp = 0
-
-    for q in quests:
-        if q.status != "inProgress":
-            continue
-        q.progress_value = _progress_for(
-            db, q.user_id, q.catalog.metric, q.starts_at, q.expires_at
+def today_earned(db: Session, user: User) -> int:
+    """The XP already banked for the user's current day (read-only)."""
+    row = db.scalar(
+        select(UserXpDaily.xp).where(
+            UserXpDaily.user_id == user.id, UserXpDaily.day == _utc_now().date()
         )
-        if q.progress_value >= q.target_value:
-            q.status = "complete"
-            q.completed_at = now
-            reward = q.catalog.xp_reward
-            row = db.scalar(
-                select(UserXpDaily).where(
-                    UserXpDaily.user_id == q.user_id,
-                    UserXpDaily.day == today,
-                )
-            )
-            if row is None:
-                db.add(UserXpDaily(user_id=q.user_id, day=today, xp=reward))
-            else:
-                row.xp = (row.xp or 0) + reward
-            total_xp += reward
-
-    db.commit()
-    return total_xp
+    )
+    return int(row or 0)
 
 
-def serialize_pool(quests: list[UserQuest]) -> dict:
-    """Returns the `quests` block in the shape `UserSnapshot.fromJson` parses."""
+def refresh_progress(
+    db: Session, user: User, quests: list[UserQuest], totals: dict[str, float]
+) -> int:
+    """Update each quest's progress from the app-sent per-metric daily totals
+    (no raw samples stored — HealthKit is the source of truth), then set
+    today's XP to the PROPORTIONAL sum across the 4 active quests.
+
+    `totals` maps metric → today's summed value. Returns earned XP.
+    """
+    now = _utc_now()
+    day = now.date()
     active = [q for q in quests if q.slot == "active"]
-    return {
-        "activeIds": [str(q.id) for q in active],
-        "pool": [
+    xpmap = active_xp_map(active)
+
+    earned = 0.0
+    for q in quests:
+        if q.status == "expired":
+            continue
+        total = totals.get(q.catalog.metric)
+        if total is not None:
+            q.progress_value = float(total)
+        frac = 0.0 if q.target_value <= 0 else min(q.progress_value / q.target_value, 1.0)
+        if q.slot == "active":
+            earned += frac * xpmap.get(q.id, 0)
+            if frac >= 1.0:
+                if q.status != "complete":
+                    q.status = "complete"
+                    q.completed_at = now
+            else:
+                q.status = "inProgress"
+
+    earned_int = round(earned)
+    row = db.scalar(
+        select(UserXpDaily).where(
+            UserXpDaily.user_id == user.id, UserXpDaily.day == day
+        )
+    )
+    if row is None:
+        db.add(UserXpDaily(user_id=user.id, day=day, xp=earned_int))
+    else:
+        # Overwrite — proportional XP is recomputed from cumulative progress
+        # each call, not incremented.
+        row.xp = earned_int
+    db.commit()
+    return earned_int
+
+
+# ---------------------------------------------------------------- serialization
+
+def serialize_pool(user: User, quests: list[UserQuest]) -> dict:
+    """The `quests` block in the shape `UserSnapshot.fromJson` parses, plus the
+    lock state (server-authoritative) so the app can freeze the UI."""
+    active = [q for q in quests if q.slot == "active"]
+    xpmap = active_xp_map(active)
+    _, _, lock_utc = day_bounds(_user_tz(user))
+
+    pool = []
+    for q in quests:
+        is_active = q.slot == "active"
+        pool.append(
             {
                 "id": str(q.id),
                 "title": q.catalog.title,
                 "metric": q.catalog.metric,
                 "target": q.target_value,
                 "current": q.progress_value,
-                "xpReward": q.catalog.xp_reward,
+                # Active quests show their normalized 1000-budget slice;
+                # available quests show their indicative difficulty value.
+                "xpReward": xpmap[q.id] if is_active else int(q.catalog.xp_reward),
                 "status": "complete" if q.status == "complete" else "inProgress",
             }
-            for q in quests
-        ],
+        )
+
+    return {
+        "activeIds": [str(q.id) for q in active],
+        "pool": pool,
+        "locked": is_locked(user),
+        "lockAtUtc": lock_utc.isoformat(),
     }
+
+
+# ---------------------------------------------------------------- catalog seed
+
+# tier → (stretch factor vs baseline, difficulty weight used to split 1000 XP)
+_TIERS = {
+    "easy": (0.8, 150),
+    "medium": (1.0, 250),
+    "hard": (1.25, 400),
+    "epic": (1.5, 600),
+}
+# Daily-improvable "active" metrics that map cleanly to a single summed total.
+# The metric string MUST match what the app sends as a sample `type`, which is
+# `HealthDataType.<X>.name` from the `health` package (e.g. "STEPS").
+_METRICS = [
+    ("STEPS", "Steps"),
+    ("DISTANCE_WALKING_RUNNING", "Distance"),
+    ("ACTIVE_ENERGY_BURNED", "Active Energy"),
+    ("EXERCISE_TIME", "Exercise Minutes"),
+    ("FLIGHTS_CLIMBED", "Flights Climbed"),
+]
+
+
+def seed_catalog(db: Session) -> int:
+    """Idempotently populate quest_catalog (metric × tier daily quests).
+    Returns the number of rows inserted (0 if already seeded)."""
+    if db.scalar(select(func.count()).select_from(QuestCatalog)):
+        return 0
+    rows = []
+    for metric, label in _METRICS:
+        key = metric.lower()
+        for tier, (stretch, xp) in _TIERS.items():
+            rows.append(
+                QuestCatalog(
+                    slug=f"{key}-{tier}-daily",
+                    title=f"{label} — {tier.title()}",
+                    metric=metric,
+                    tier=tier,
+                    duration="daily",
+                    stretch_factor=stretch,
+                    xp_reward=xp,
+                    is_active=True,
+                )
+            )
+    db.add_all(rows)
+    db.commit()
+    return len(rows)

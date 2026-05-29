@@ -39,7 +39,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   final _controller = PageController(initialPage: 1);
   final _storage = StorageService.instance;
   final _health = HealthService();
-  late final _sync = SyncService(health: _health, storage: _storage);
+  late final _sync = SyncService(health: _health);
   bool _healthBootstrapped = false;
 
   @override
@@ -139,14 +139,30 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     await _storage.setPermissionsAsked();
   }
 
-  /// Start the initial sync + background observers. These upload to the
-  /// backend, so they need a token — only runs once authenticated (snapshot
-  /// loaded, or just logged in). Permissions are handled separately, earlier.
+  /// Runs once per session, authenticated: register the background HealthKit
+  /// observer, then generate today's pool from the on-device baseline + push
+  /// today's totals, and refresh the snapshot so the side-quests page fills.
   Future<void> _bootstrapHealth() async {
     if (_healthBootstrapped) return;
     _healthBootstrapped = true;
-    unawaited(_sync.syncOnce());
     unawaited(BackgroundSync.startObservers());
+    await _generateAndRefresh();
+  }
+
+  /// Send both on-device summaries — the 7-day baseline (generates the pool)
+  /// and today's totals (initial progress) — then re-fetch the snapshot so the
+  /// quests + XP show up. Non-fatal on failure. No raw samples are sent.
+  Future<void> _generateAndRefresh() async {
+    try {
+      final baselines = await _health.computeBaseline();
+      final totals = await _health.computeTodayTotals();
+      await ApiClient().syncQuests(baselines: baselines, totals: totals);
+      final snap = await UserRepository().loadCurrent();
+      if (!mounted) return;
+      setState(() => _snapshot = snap);
+    } catch (_) {
+      // Quests just won't populate until a later launch — don't disrupt UI.
+    }
   }
 
   Future<void> _retry() async {
