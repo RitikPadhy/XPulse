@@ -8,7 +8,7 @@ import 'models/user_snapshot.dart';
 /// read this via `AppStateScope.of(context)` and rebuild when it changes.
 class AppState extends ChangeNotifier {
   AppState({required this.snapshot})
-      : _activeQuestIds = {...snapshot.quests.initialActiveIds};
+    : _activeQuestIds = {...snapshot.quests.initialActiveIds};
 
   final UserSnapshot snapshot;
   final Set<String> _activeQuestIds;
@@ -18,14 +18,14 @@ class AppState extends ChangeNotifier {
   Set<String> get activeQuestIds => Set.unmodifiable(_activeQuestIds);
 
   List<Quest> get activeQuests => [
-        for (final id in _activeQuestIds)
-          if (snapshot.quests.byId(id) != null) snapshot.quests.byId(id)!,
-      ];
+    for (final id in _activeQuestIds)
+      if (snapshot.quests.byId(id) != null) snapshot.quests.byId(id)!,
+  ];
 
   List<Quest> get availableQuests => [
-        for (final q in snapshot.quests.pool)
-          if (!_activeQuestIds.contains(q.id)) q,
-      ];
+    for (final q in snapshot.quests.pool)
+      if (!_activeQuestIds.contains(q.id)) q,
+  ];
 
   bool get isFull => _activeQuestIds.length >= maxActiveQuests;
 
@@ -49,8 +49,7 @@ class AppStateScope extends InheritedNotifier<AppState> {
   });
 
   static AppState of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<AppStateScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<AppStateScope>();
     assert(scope != null, 'No AppStateScope found in widget tree.');
     return scope!.notifier!;
   }

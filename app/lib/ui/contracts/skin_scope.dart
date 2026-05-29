@@ -26,6 +26,5 @@ class SkinScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(SkinScope oldWidget) =>
-      components != oldWidget.components ||
-      palette != oldWidget.palette;
+      components != oldWidget.components || palette != oldWidget.palette;
 }

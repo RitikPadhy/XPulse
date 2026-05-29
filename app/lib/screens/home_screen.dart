@@ -23,18 +23,18 @@ class _HomeScreenState extends State<HomeScreen> {
       duration: const Duration(milliseconds: 200),
       child: switch (_view) {
         _View.profile => _ProfileView(
-            key: const ValueKey('profile'),
-            onBack: () => _go(_View.home),
-          ),
+          key: const ValueKey('profile'),
+          onBack: () => _go(_View.home),
+        ),
         _View.xpBreakdown => _XpBreakdownView(
-            key: const ValueKey('xp-breakdown'),
-            onBack: () => _go(_View.home),
-          ),
+          key: const ValueKey('xp-breakdown'),
+          onBack: () => _go(_View.home),
+        ),
         _View.home => _HomeView(
-            key: const ValueKey('home'),
-            onOpenProfile: () => _go(_View.profile),
-            onOpenXpBreakdown: () => _go(_View.xpBreakdown),
-          ),
+          key: const ValueKey('home'),
+          onOpenProfile: () => _go(_View.profile),
+          onOpenXpBreakdown: () => _go(_View.xpBreakdown),
+        ),
       },
     );
   }
@@ -149,7 +149,6 @@ class _BackButton extends StatelessWidget {
           'BACK',
           style: TextStyle(
             color: p.accent,
-            fontFamily: 'Courier',
             fontSize: 11,
             fontWeight: FontWeight.w800,
             letterSpacing: 1.5,

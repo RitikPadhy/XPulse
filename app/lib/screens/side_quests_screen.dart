@@ -21,7 +21,8 @@ class SideQuestsScreen extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 24),
             children: [
               c.sectionHeader(
-                label: 'Active  (${active.length} / ${AppState.maxActiveQuests})',
+                label:
+                    'Active  (${active.length} / ${AppState.maxActiveQuests})',
               ),
               if (active.isEmpty)
                 _EmptyLine(text: 'Pick up to 4 below.')
@@ -65,12 +66,7 @@ class _EmptyLine extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Text(
         text,
-        style: TextStyle(
-          color: p.textMuted,
-          fontFamily: 'Courier',
-          fontSize: 11,
-          letterSpacing: 1,
-        ),
+        style: TextStyle(color: p.textMuted, fontSize: 11, letterSpacing: 1),
       ),
     );
   }

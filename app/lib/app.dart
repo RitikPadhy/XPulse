@@ -23,6 +23,10 @@ class XPulseApp extends StatelessWidget {
         // blends into the iOS launch image instead of flashing a different
         // color before the synthwave painter draws.
         scaffoldBackgroundColor: const Color(0xFF0B0420),
+        // Manrope app-wide (bundled variable font, weights 200–800). Setting it
+        // as the family means every Text whose TextStyle leaves fontFamily
+        // unset inherits it via the ambient DefaultTextStyle.
+        fontFamily: 'Manrope',
       ),
       home: SkinScope(
         components: skin,

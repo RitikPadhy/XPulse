@@ -26,7 +26,11 @@ abstract class ComponentLibrary {
   Widget sectionHeader({required String label});
 
   /// Large pixel-art avatar block — centerpiece of the home page.
-  Widget avatar({required String avatarKey, required String displayName, String? subtitle});
+  Widget avatar({
+    required String avatarKey,
+    required String displayName,
+    String? subtitle,
+  });
 
   /// Daily XP bar. Tappable when `onTap` is non-null (used to open the
   /// breakdown view).

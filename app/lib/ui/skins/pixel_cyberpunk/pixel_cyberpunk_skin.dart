@@ -25,8 +25,7 @@ class PixelCyberpunkSkin implements ComponentLibrary {
       _ProfileButton(onTap: onTap);
 
   @override
-  Widget profileSheet({required UserProfile user}) =>
-      _ProfileSheet(user: user);
+  Widget profileSheet({required UserProfile user}) => _ProfileSheet(user: user);
 
   @override
   Widget sectionHeader({required String label}) => _SectionHeader(label: label);
@@ -36,12 +35,11 @@ class PixelCyberpunkSkin implements ComponentLibrary {
     required String avatarKey,
     required String displayName,
     String? subtitle,
-  }) =>
-      _Avatar(
-        avatarKey: avatarKey,
-        displayName: displayName,
-        subtitle: subtitle,
-      );
+  }) => _Avatar(
+    avatarKey: avatarKey,
+    displayName: displayName,
+    subtitle: subtitle,
+  );
 
   @override
   Widget xpBar({
@@ -49,16 +47,14 @@ class PixelCyberpunkSkin implements ComponentLibrary {
     required int goal,
     required double progress,
     VoidCallback? onTap,
-  }) =>
-      _XpBar(earned: earned, goal: goal, progress: progress, onTap: onTap);
+  }) => _XpBar(earned: earned, goal: goal, progress: progress, onTap: onTap);
 
   @override
   Widget xpBreakdownSheet({
     required int earned,
     required int goal,
     required List<XpGain> items,
-  }) =>
-      _XpBreakdownSheet(earned: earned, goal: goal, items: items);
+  }) => _XpBreakdownSheet(earned: earned, goal: goal, items: items);
 
   @override
   Widget questPickerTile({
@@ -66,21 +62,19 @@ class PixelCyberpunkSkin implements ComponentLibrary {
     required bool isActive,
     required bool canActivate,
     required VoidCallback onTap,
-  }) =>
-      _QuestPickerTile(
-        quest: quest,
-        isActive: isActive,
-        canActivate: canActivate,
-        onTap: onTap,
-      );
+  }) => _QuestPickerTile(
+    quest: quest,
+    isActive: isActive,
+    canActivate: canActivate,
+    onTap: onTap,
+  );
 
   @override
   Widget friendRow({
     required Friend friend,
     required bool isCurrentUser,
     required VoidCallback onTap,
-  }) =>
-      _FriendRow(friend: friend, isCurrentUser: isCurrentUser, onTap: onTap);
+  }) => _FriendRow(friend: friend, isCurrentUser: isCurrentUser, onTap: onTap);
 
   @override
   Widget friendDetailHeader({required FriendDetail friend}) =>
@@ -101,7 +95,6 @@ TextStyle _mono(Color c, {double size = 12, FontWeight w = FontWeight.w600}) =>
       color: c,
       fontSize: size,
       fontWeight: w,
-      fontFamily: 'Courier',
       letterSpacing: 1.2,
       height: 1.2,
     );
@@ -164,7 +157,6 @@ class _BackgroundState extends State<_Background>
   }
 }
 
-
 class _PageHeader extends StatelessWidget {
   final String title;
   final Widget? trailing;
@@ -215,7 +207,10 @@ class _ProfileButton extends StatelessWidget {
           border: Border.all(color: p.accent, width: 2),
         ),
         child: Center(
-          child: Text('P', style: _mono(p.accent, size: 14, w: FontWeight.w900)),
+          child: Text(
+            'P',
+            style: _mono(p.accent, size: 14, w: FontWeight.w900),
+          ),
         ),
       ),
     );
@@ -304,8 +299,10 @@ class _ProfileHero extends StatelessWidget {
               ),
               if (user.country != null) ...[
                 const SizedBox(height: 4),
-                Text(user.country!.toUpperCase(),
-                    style: _mono(p.accent, size: 11)),
+                Text(
+                  user.country!.toUpperCase(),
+                  style: _mono(p.accent, size: 11),
+                ),
               ],
             ],
           ),
@@ -326,8 +323,10 @@ class _ProfileSectionLabel extends StatelessWidget {
       children: [
         Container(width: 6, height: 6, color: p.accent),
         const SizedBox(width: 8),
-        Text(label.toUpperCase(),
-            style: _mono(p.textPrimary, size: 11, w: FontWeight.w800)),
+        Text(
+          label.toUpperCase(),
+          style: _mono(p.textPrimary, size: 11, w: FontWeight.w800),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Container(
@@ -370,8 +369,10 @@ class _StatTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(value,
-                  style: _mono(p.textPrimary, size: 20, w: FontWeight.w900)),
+              Text(
+                value,
+                style: _mono(p.textPrimary, size: 20, w: FontWeight.w900),
+              ),
               if (sub != null) ...[
                 const SizedBox(width: 4),
                 Text(sub!, style: _mono(p.textMuted, size: 11)),
@@ -396,8 +397,10 @@ class _DataRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(
         border: Border(
-          bottom:
-              BorderSide(color: p.textMuted.withValues(alpha: 0.12), width: 1),
+          bottom: BorderSide(
+            color: p.textMuted.withValues(alpha: 0.12),
+            width: 1,
+          ),
         ),
       ),
       child: Row(
@@ -432,8 +435,10 @@ class _SectionHeader extends StatelessWidget {
         children: [
           Container(width: 6, height: 6, color: p.accent),
           const SizedBox(width: 8),
-          Text(label.toUpperCase(),
-              style: _mono(p.textPrimary, size: 11, w: FontWeight.w800)),
+          Text(
+            label.toUpperCase(),
+            style: _mono(p.textPrimary, size: 11, w: FontWeight.w800),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Container(
@@ -476,10 +481,7 @@ class _Avatar extends StatelessWidget {
         ),
         if (subtitle != null && subtitle!.isNotEmpty) ...[
           const SizedBox(height: 6),
-          Text(
-            subtitle!.toUpperCase(),
-            style: _mono(p.textMuted, size: 12),
-          ),
+          Text(subtitle!.toUpperCase(), style: _mono(p.textMuted, size: 12)),
         ],
       ],
     );
@@ -601,30 +603,32 @@ class _PixelAvatarPainter extends CustomPainter {
   // Fixed (non palette-driven) sprite colors. These give the ronin a
   // consistent identity across time-of-day palette shifts, while the
   // jacket/trim continue to pick up the primary/accent.
-  static const _hair    = Color(0xFF15102E);
+  static const _hair = Color(0xFF15102E);
   static const _hairLit = Color(0xFF2A1F55);
-  static const _band    = Color(0xFFE5364C);
+  static const _band = Color(0xFFE5364C);
   static const _bandLit = Color(0xFFFF6A7C);
-  static const _skin    = Color(0xFFE8B89B);
+  static const _skin = Color(0xFFE8B89B);
   static const _skinLit = Color(0xFFF5D4BC);
-  static const _pants   = Color(0xFF2A1F40);
-  static const _boots   = Color(0xFF120A22);
+  static const _pants = Color(0xFF2A1F40);
+  static const _boots = Color(0xFF120A22);
 
   @override
   void paint(Canvas canvas, Size size) {
     final rows = _avatarSprite.length;
     final cols = _avatarSprite.first.length;
     final cell = math.min(size.width / cols, size.height / rows);
-    final dxBase = (size.width  - cell * cols) / 2;
+    final dxBase = (size.width - cell * cols) / 2;
     final dyBase = (size.height - cell * rows) / 2;
 
     // Walking back-and-forth across the canvas, 1 round-trip per cycle.
     final walkX = math.sin(t * 2 * math.pi) * size.width * 0.10;
 
     // 4 steps per cycle. Each step lifts one leg, alternating.
-    final stepIdx = (t * 4).floor() % 2;     // 0 or 1 — which leg is up
-    final stepProgress = (t * 4) % 1;        // 0..1 within the current step
-    final stepCurve = math.sin(stepProgress * math.pi); // 0 → 1 → 0 over the step
+    final stepIdx = (t * 4).floor() % 2; // 0 or 1 — which leg is up
+    final stepProgress = (t * 4) % 1; // 0..1 within the current step
+    final stepCurve = math.sin(
+      stepProgress * math.pi,
+    ); // 0 → 1 → 0 over the step
     final legLift = stepCurve * cell * 0.55; // foot lifts off the ground
     final bodyBob = -stepCurve * cell * 0.20; // body rises mid-step
 
@@ -636,10 +640,11 @@ class _PixelAvatarPainter extends CustomPainter {
     // Hair tips drift slightly with motion.
     final sway = math.sin(t * 2 * math.pi) * 1.2;
 
-    final jacketMain   = Paint()..color = primary;
-    final jacketTrim   = Paint()..color = accent;
+    final jacketMain = Paint()..color = primary;
+    final jacketTrim = Paint()..color = accent;
     final jacketShadow = Paint()..color = _shade(primary, 0.55);
-    final buckle       = Paint()..color = Color.lerp(accent, const Color(0xFFFFFFFF), 0.25)!;
+    final buckle = Paint()
+      ..color = Color.lerp(accent, const Color(0xFFFFFFFF), 0.25)!;
 
     for (int y = 0; y < rows; y++) {
       final line = _avatarSprite[y];
@@ -770,16 +775,26 @@ class _SceneBackgroundPainter extends CustomPainter {
     // ---------- stars ----------
     // Deterministic constellation — looks intentional, twinkles independently.
     const stars = <List<double>>[
-      [0.08, 0.10], [0.18, 0.22], [0.28, 0.06], [0.40, 0.16],
-      [0.55, 0.09], [0.70, 0.20], [0.82, 0.08], [0.92, 0.30],
-      [0.12, 0.40], [0.36, 0.48], [0.68, 0.42], [0.88, 0.52],
+      [0.08, 0.10],
+      [0.18, 0.22],
+      [0.28, 0.06],
+      [0.40, 0.16],
+      [0.55, 0.09],
+      [0.70, 0.20],
+      [0.82, 0.08],
+      [0.92, 0.30],
+      [0.12, 0.40],
+      [0.36, 0.48],
+      [0.68, 0.42],
+      [0.88, 0.52],
     ];
     final starPaint = Paint();
     for (int i = 0; i < stars.length; i++) {
       final s = stars[i];
       final twinkle = (math.sin(t * 2 * math.pi + i * 0.9) + 1) / 2; // 0..1
-      starPaint.color = const Color(0xFFFFFFFF)
-          .withValues(alpha: 0.25 + 0.55 * twinkle);
+      starPaint.color = const Color(
+        0xFFFFFFFF,
+      ).withValues(alpha: 0.25 + 0.55 * twinkle);
       canvas.drawCircle(
         Offset(s[0] * w, s[1] * horizonY),
         0.8 + 0.6 * twinkle,
@@ -835,10 +850,7 @@ class _SceneBackgroundPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            _shade(primary, 0.18),
-            _shade(primary, 0.06),
-          ],
+          colors: [_shade(primary, 0.18), _shade(primary, 0.06)],
         ).createShader(floorRect),
     );
   }
@@ -882,8 +894,10 @@ class _XpBar extends StatelessWidget {
             children: [
               Text('DAILY XP', style: _mono(p.textMuted, size: 10)),
               const Spacer(),
-              Text('$earned / $goal',
-                  style: _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
+              Text(
+                '$earned / $goal',
+                style: _mono(p.textPrimary, size: 12, w: FontWeight.w800),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -900,9 +914,7 @@ class _XpBar extends StatelessWidget {
                     width: c.maxWidth * progress,
                     decoration: BoxDecoration(
                       color: p.primary,
-                      boxShadow: [
-                        BoxShadow(color: p.primary, blurRadius: 8),
-                      ],
+                      boxShadow: [BoxShadow(color: p.primary, blurRadius: 8)],
                     ),
                   ),
                   Row(
@@ -962,7 +974,10 @@ class _XpBreakdownSheet extends StatelessWidget {
               color: p.surface,
               border: Border.all(color: p.primary, width: 2),
               boxShadow: [
-                BoxShadow(color: p.primary.withValues(alpha: 0.35), blurRadius: 18),
+                BoxShadow(
+                  color: p.primary.withValues(alpha: 0.35),
+                  blurRadius: 18,
+                ),
               ],
             ),
             child: Column(
@@ -973,13 +988,17 @@ class _XpBreakdownSheet extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('$earned',
-                        style: _mono(p.primary, size: 32, w: FontWeight.w900)),
+                    Text(
+                      '$earned',
+                      style: _mono(p.primary, size: 32, w: FontWeight.w900),
+                    ),
                     const SizedBox(width: 6),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: Text('/ $goal XP',
-                          style: _mono(p.textMuted, size: 12)),
+                      child: Text(
+                        '/ $goal XP',
+                        style: _mono(p.textMuted, size: 12),
+                      ),
                     ),
                   ],
                 ),
@@ -1004,8 +1023,8 @@ class _XpGainRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
     final (tag, stripe) = switch (item.source) {
-      XpSource.quest    => ('QUEST',    p.primary),
-      XpSource.crit     => ('CRIT',     p.accent),
+      XpSource.quest => ('QUEST', p.primary),
+      XpSource.crit => ('CRIT', p.accent),
       XpSource.activity => ('ACTIVITY', p.textMuted),
     };
     return Container(
@@ -1024,14 +1043,18 @@ class _XpGainRow extends StatelessWidget {
               children: [
                 Text(tag, style: _mono(stripe, size: 9, w: FontWeight.w800)),
                 const SizedBox(height: 3),
-                Text(item.label.toUpperCase(),
-                    style: _mono(p.textPrimary, size: 12, w: FontWeight.w700)),
+                Text(
+                  item.label.toUpperCase(),
+                  style: _mono(p.textPrimary, size: 12, w: FontWeight.w700),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text('+${item.xp} XP',
-              style: _mono(stripe, size: 13, w: FontWeight.w900)),
+          Text(
+            '+${item.xp} XP',
+            style: _mono(stripe, size: 13, w: FontWeight.w900),
+          ),
         ],
       ),
     );
@@ -1054,7 +1077,9 @@ class _QuestPickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
     final enabled = isActive || canActivate;
-    final borderColor = isActive ? p.primary : (enabled ? p.accent : p.textMuted);
+    final borderColor = isActive
+        ? p.primary
+        : (enabled ? p.accent : p.textMuted);
     final actionLabel = isActive ? 'REMOVE' : (enabled ? 'ADD' : 'LOCKED');
     return Opacity(
       opacity: enabled ? 1.0 : 0.5,
@@ -1073,9 +1098,10 @@ class _QuestPickerTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(quest.title.toUpperCase(),
-                        style:
-                            _mono(p.textPrimary, size: 12, w: FontWeight.w800)),
+                    Text(
+                      quest.title.toUpperCase(),
+                      style: _mono(p.textPrimary, size: 12, w: FontWeight.w800),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '${quest.current} / ${quest.target} ${quest.metric}',
@@ -1088,17 +1114,23 @@ class _QuestPickerTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('+${quest.xpReward} XP',
-                      style: _mono(borderColor, size: 11, w: FontWeight.w800)),
+                  Text(
+                    '+${quest.xpReward} XP',
+                    style: _mono(borderColor, size: 11, w: FontWeight.w800),
+                  ),
                   const SizedBox(height: 4),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: borderColor),
                     ),
-                    child: Text(actionLabel,
-                        style: _mono(borderColor, size: 9)),
+                    child: Text(
+                      actionLabel,
+                      style: _mono(borderColor, size: 9),
+                    ),
                   ),
                 ],
               ),
@@ -1133,25 +1165,26 @@ class _FriendRow extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isCurrentUser
-              ? p.primary.withValues(alpha: 0.12)
-              : p.surface,
+          color: isCurrentUser ? p.primary.withValues(alpha: 0.12) : p.surface,
           border: Border.all(color: accentColor, width: 2),
         ),
         child: Row(
           children: [
             SizedBox(
               width: 32,
-              child: Text('#${friend.rank}',
-                  style: _mono(accentColor, size: 14, w: FontWeight.w900)),
+              child: Text(
+                '#${friend.rank}',
+                style: _mono(accentColor, size: 14, w: FontWeight.w900),
+              ),
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(friend.displayName.toUpperCase(),
-                      style:
-                          _mono(p.textPrimary, size: 14, w: FontWeight.w800)),
+                  Text(
+                    friend.displayName.toUpperCase(),
+                    style: _mono(p.textPrimary, size: 14, w: FontWeight.w800),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     [
@@ -1166,8 +1199,10 @@ class _FriendRow extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('${friend.totalXp}',
-                    style: _mono(accentColor, size: 16, w: FontWeight.w900)),
+                Text(
+                  '${friend.totalXp}',
+                  style: _mono(accentColor, size: 16, w: FontWeight.w900),
+                ),
                 Text('TOTAL XP', style: _mono(p.textMuted, size: 9)),
               ],
             ),
@@ -1198,8 +1233,10 @@ class _FriendDetailHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(friend.displayName.toUpperCase(),
-              style: _mono(p.textPrimary, size: 22, w: FontWeight.w900)),
+          Text(
+            friend.displayName.toUpperCase(),
+            style: _mono(p.textPrimary, size: 22, w: FontWeight.w900),
+          ),
           if (friend.country != null || friend.rank != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -1215,13 +1252,17 @@ class _FriendDetailHeader extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${friend.totalXp}',
-                  style: _mono(p.primary, size: 30, w: FontWeight.w900)),
+              Text(
+                '${friend.totalXp}',
+                style: _mono(p.primary, size: 30, w: FontWeight.w900),
+              ),
               const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('TOTAL XP  •  +${friend.dailyXp} TODAY',
-                    style: _mono(p.textMuted, size: 11)),
+                child: Text(
+                  'TOTAL XP  •  +${friend.dailyXp} TODAY',
+                  style: _mono(p.textMuted, size: 11),
+                ),
               ),
             ],
           ),
@@ -1258,11 +1299,15 @@ class _FriendDailyXpRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(entry.day,
-                style: _mono(p.textPrimary, size: 13, w: FontWeight.w700)),
+            child: Text(
+              entry.day,
+              style: _mono(p.textPrimary, size: 13, w: FontWeight.w700),
+            ),
           ),
-          Text('+${entry.xp} XP',
-              style: _mono(highlight, size: 13, w: FontWeight.w800)),
+          Text(
+            '+${entry.xp} XP',
+            style: _mono(highlight, size: 13, w: FontWeight.w800),
+          ),
         ],
       ),
     );

@@ -51,9 +51,18 @@ class _AppShellState extends State<AppShell> {
   /// [UnauthenticatedException] → [AuthScreen]; any other error → retryable
   /// error view. 200 → Home.
   Future<void> _load() async {
+    debugPrint('[XPULSE] _load: start');
     try {
       await _storage.ensureFreshInstallIsClean();
+      // TEMP (auth dev): force the AuthScreen by wiping any saved token on
+      // every launch. REMOVE this line when done testing the auth flow.
+      await _storage.clearApiToken();
+      debugPrint('[XPULSE] _load: token after clear = ${await _storage.getApiToken()}');
+      // Ask for HealthKit access up front — before sign-in — so the system
+      // sheet appears at launch, not after auth.
+      await _ensureHealthPermissions();
       final snap = await UserRepository().loadCurrent();
+      debugPrint('[XPULSE] _load: snapshot OK -> Home');
       if (!mounted) return;
       setState(() {
         _snapshot = snap;
@@ -62,6 +71,8 @@ class _AppShellState extends State<AppShell> {
       });
       _bootstrapHealth();
     } catch (e) {
+      debugPrint('[XPULSE] _load: caught ${e.runtimeType} -> '
+          '${e is UnauthenticatedException ? "AuthScreen" : "error view"}: $e');
       if (!mounted) return;
       setState(() {
         _error = e;
@@ -98,14 +109,20 @@ class _AppShellState extends State<AppShell> {
     _bootstrapHealth();
   }
 
+  /// Ask for HealthKit access ONCE, up front at launch (before the user signs
+  /// in). Idempotent across launches via the persisted flag.
+  Future<void> _ensureHealthPermissions() async {
+    if (await _storage.getPermissionsAsked()) return;
+    await _health.requestPermissions();
+    await _storage.setPermissionsAsked();
+  }
+
+  /// Start the initial sync + background observers. These upload to the
+  /// backend, so they need a token — only runs once authenticated (snapshot
+  /// loaded, or just logged in). Permissions are handled separately, earlier.
   Future<void> _bootstrapHealth() async {
     if (_healthBootstrapped) return;
     _healthBootstrapped = true;
-    final asked = await _storage.getPermissionsAsked();
-    if (!asked) {
-      await _health.requestPermissions();
-      await _storage.setPermissionsAsked();
-    }
     unawaited(_sync.syncOnce());
     unawaited(BackgroundSync.startObservers());
   }
@@ -190,9 +207,8 @@ class _AppShellState extends State<AppShell> {
               'CONNECTION LOST',
               style: TextStyle(
                 color: p.primary,
-                fontFamily: 'Courier',
                 fontWeight: FontWeight.w900,
-                letterSpacing: 4,
+                letterSpacing: 2,
                 fontSize: 14,
               ),
             ),
@@ -200,11 +216,7 @@ class _AppShellState extends State<AppShell> {
             Text(
               '${_error ?? 'Unknown error'}',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: p.textMuted,
-                fontFamily: 'Courier',
-                fontSize: 11,
-              ),
+              style: TextStyle(color: p.textMuted, fontSize: 11),
             ),
             const SizedBox(height: 20),
             GestureDetector(
@@ -224,7 +236,6 @@ class _AppShellState extends State<AppShell> {
                   _retrying ? '...' : 'RETRY',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontFamily: 'Courier',
                     fontWeight: FontWeight.w900,
                     letterSpacing: 3,
                   ),

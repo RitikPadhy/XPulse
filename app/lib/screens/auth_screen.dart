@@ -8,6 +8,9 @@ import '../ui/contracts/skin_scope.dart';
 
 /// Login + sign-up screen. Shown when the snapshot endpoint returns 401 (no
 /// stored token, or the token is invalid).
+///
+/// Kept deliberately calm and compact: a neutral wordmark, one accent colour
+/// (the button + links), subtle field borders, and plain-text status lines.
 class AuthScreen extends StatefulWidget {
   /// Invoked after a successful login/signup with the freshly-fetched
   /// snapshot — so the host renders Home directly, no BOOTING gap.
@@ -21,6 +24,9 @@ class AuthScreen extends StatefulWidget {
 enum _Mode { login, signup }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // One soft red for errors — the only colour on the page besides the accent.
+  static const _errorColor = Color(0xFFFF6B81);
+
   _Mode _mode = _Mode.login;
   bool _busy = false;
   String? _error;
@@ -109,163 +115,114 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
 
-    // Opaque gradient sky so the skin's animated scene (retro sun, grid floor)
-    // doesn't bleed through — keeps the synthwave mood without a flat-black
-    // (or busy) backdrop behind the form.
     return DecoratedBox(
+      // Exact same gradient as the launch screen (LaunchScreen.storyboard):
+      // 40 dark indigo → dark purple steps, top to bottom.
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B0420), Color(0xFF3A0E3D)],
+          colors: [
+            Color(0xFF0C0420), Color(0xFF0D0421), Color(0xFF0F0522),
+            Color(0xFF110522), Color(0xFF120523), Color(0xFF140524),
+            Color(0xFF160624), Color(0xFF170625), Color(0xFF190626),
+            Color(0xFF1B0626), Color(0xFF1C0727), Color(0xFF1E0728),
+            Color(0xFF200728), Color(0xFF210729), Color(0xFF23082A),
+            Color(0xFF25082A), Color(0xFF26082B), Color(0xFF28082C),
+            Color(0xFF2A092C), Color(0xFF2B092D), Color(0xFF2D092E),
+            Color(0xFF2E092F), Color(0xFF300A2F), Color(0xFF320A30),
+            Color(0xFF330A31), Color(0xFF350A31), Color(0xFF370B32),
+            Color(0xFF380B33), Color(0xFF3A0B33), Color(0xFF3C0B34),
+            Color(0xFF3D0C35), Color(0xFF3F0C35), Color(0xFF410C36),
+            Color(0xFF420C37), Color(0xFF440D37), Color(0xFF460D38),
+            Color(0xFF470D39), Color(0xFF490D39), Color(0xFF4B0E3A),
+            Color(0xFF4C0E3B),
+          ],
         ),
       ),
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 12),
-                Text(
-                  'XPULSE',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: p.primary,
-                    fontFamily: 'Courier',
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 8,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _isLogin ? 'LOG IN' : 'SIGN UP',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: p.accent,
-                    fontFamily: 'Courier',
-                    fontSize: 14,
-                    letterSpacing: 4,
-                  ),
-                ),
-                const SizedBox(height: 36),
-                if (!_isLogin) ...[
-                  _PixelField(
-                    controller: _displayName,
-                    label: 'NAME',
-                    hint: 'your name',
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                _PixelField(
-                  controller: _email,
-                  label: 'EMAIL',
-                  hint: 'you@example.com',
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 12),
-                _PixelField(
-                  controller: _password,
-                  label: 'PASSWORD',
-                  hint: _isLogin ? 'enter password' : '8+ characters',
-                  obscureText: true,
-                ),
-                const SizedBox(height: 16),
-                if (_error != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: p.primary.withValues(alpha: 0.12),
-                      border: Border.all(color: p.primary, width: 1.5),
-                    ),
-                    child: Text(
-                      _error!,
-                      style: TextStyle(
-                        color: p.primary,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'XPULSE',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: p.textPrimary,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 4,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                if (_info != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: p.accent.withValues(alpha: 0.12),
-                      border: Border.all(color: p.accent, width: 1.5),
-                    ),
-                    child: Text(
-                      _info!,
-                      style: TextStyle(
-                        color: p.accent,
-                        fontFamily: 'Courier',
-                        fontSize: 12,
-                      ),
-                    ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _isLogin ? 'Welcome back' : 'Create your account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: p.textMuted, fontSize: 13),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                GestureDetector(
-                  onTap: _busy ? null : _submit,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: _busy
-                          ? p.primary.withValues(alpha: 0.4)
-                          : p.primary,
-                      border: Border.all(color: p.accent, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: p.primary.withValues(alpha: 0.55),
-                          blurRadius: 18,
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      _busy ? '...' : (_isLogin ? 'LOG IN' : 'SIGN UP'),
+                  const SizedBox(height: 28),
+                  if (!_isLogin) ...[
+                    _Field(controller: _displayName, hint: 'Name'),
+                    const SizedBox(height: 10),
+                  ],
+                  _Field(
+                    controller: _email,
+                    hint: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 10),
+                  _Field(
+                    controller: _password,
+                    hint: 'Password',
+                    obscureText: true,
+                  ),
+                  if (_error != null || _info != null) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      _error ?? _info!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'Courier',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 4,
+                      style: TextStyle(
+                        color: _error != null ? _errorColor : p.textMuted,
+                        fontSize: 12.5,
+                        height: 1.3,
                       ),
                     ),
+                  ],
+                  const SizedBox(height: 22),
+                  _PrimaryButton(
+                    label: _isLogin ? 'Log in' : 'Sign up',
+                    busy: _busy,
+                    onTap: _busy ? null : _submit,
+                    color: p.accent,
                   ),
-                ),
-                const SizedBox(height: 28),
-                GestureDetector(
-                  onTap: _busy ? null : _toggleMode,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
+                  const SizedBox(height: 18),
+                  GestureDetector(
+                    onTap: _busy ? null : _toggleMode,
+                    behavior: HitTestBehavior.opaque,
                     child: Text.rich(
                       TextSpan(
                         children: [
                           TextSpan(
                             text: _isLogin
-                                ? 'NEW USER?  '
-                                : 'ALREADY A USER?  ',
+                                ? "New here?  "
+                                : 'Already have an account?  ',
                             style: TextStyle(
                               color: p.textMuted,
-                              fontFamily: 'Courier',
-                              fontSize: 12,
-                              letterSpacing: 2,
+                              fontSize: 13,
                             ),
                           ),
                           TextSpan(
-                            text: _isLogin ? 'SIGN UP' : 'LOG IN',
+                            text: _isLogin ? 'Sign up' : 'Log in',
                             style: TextStyle(
                               color: p.accent,
-                              fontFamily: 'Courier',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -273,8 +230,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -283,15 +240,15 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 }
 
-class _PixelField extends StatelessWidget {
+/// A single filled input with a subtle hairline border. Placeholder-only —
+/// no uppercase label above — to keep the form compact.
+class _Field extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
   final String hint;
   final bool obscureText;
   final TextInputType? keyboardType;
-  const _PixelField({
+  const _Field({
     required this.controller,
-    required this.label,
     required this.hint,
     this.obscureText = false,
     this.keyboardType,
@@ -300,50 +257,80 @@ class _PixelField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = SkinScope.of(context).palette;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: p.textMuted,
-            fontFamily: 'Courier',
-            fontSize: 11,
-            letterSpacing: 3,
+    return Container(
+      decoration: BoxDecoration(
+        color: p.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        autocorrect: false,
+        enableSuggestions: false,
+        style: TextStyle(color: p.textPrimary, fontSize: 15),
+        cursorColor: p.accent,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            color: p.textMuted.withValues(alpha: 0.6),
+            fontSize: 15,
           ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
-        const SizedBox(height: 4),
-        Container(
-          decoration: BoxDecoration(
-            color: p.surface,
-            border: Border.all(color: p.accent, width: 2),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            autocorrect: false,
-            enableSuggestions: false,
-            style: TextStyle(
-              color: p.textPrimary,
-              fontFamily: 'Courier',
-              fontSize: 16,
-              letterSpacing: 1,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: p.textMuted.withValues(alpha: 0.5),
-                fontFamily: 'Courier',
-                fontSize: 14,
+      ),
+    );
+  }
+}
+
+/// Solid single-colour primary action. No border, no glow.
+class _PrimaryButton extends StatelessWidget {
+  final String label;
+  final bool busy;
+  final VoidCallback? onTap;
+  final Color color;
+  const _PrimaryButton({
+    required this.label,
+    required this.busy,
+    required this.onTap,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 50,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: busy ? color.withValues(alpha: 0.5) : color,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: busy
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              )
+            : Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
               ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

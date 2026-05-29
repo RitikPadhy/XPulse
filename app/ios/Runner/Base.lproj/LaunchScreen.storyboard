@@ -134,100 +134,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sky-39">
                                 <color key="backgroundColor" red="0.2987" green="0.0544" blue="0.2300" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-0">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-0-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-0-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-1">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-1-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-1-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-2">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-2-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-2-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-3">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-3-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-3-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-4">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-4-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-4-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-5">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-5-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-5-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-6">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-6-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-6-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-7">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-7-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-7-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-8">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-8-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-8-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-9">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-9-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-9-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-10">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-10-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-10-h"/>
-                                </constraints>
-                            </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="star-11">
-                                <color key="backgroundColor" white="1" alpha="0.55" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="2.2" id="star-11-w"/>
-                                    <constraint firstAttribute="height" constant="2.2" id="star-11-h"/>
-                                </constraints>
-                            </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XPULSE" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xpulse-label">
-                                <fontDescription key="fontDescription" name="Courier-Bold" family="Courier" pointSize="48"/>
-                                <color key="textColor" red="0.9294" green="0.8862" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SYNCHRONIZED BIOMETRICS" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tagline-label">
-                                <fontDescription key="fontDescription" name="Courier-Bold" family="Courier" pointSize="20"/>
-                                <color key="textColor" red="0.6588" green="0.5765" blue="0.8" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="XpulseWordmark" translatesAutoresizingMaskIntoConstraints="NO" id="wordmark-img"/>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" red="0.0464" green="0.0162" blue="0.1268" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -392,34 +299,8 @@
                             <constraint firstItem="sky-39" firstAttribute="leading" secondItem="root-view" secondAttribute="leading" id="sky-39-l"/>
                             <constraint firstItem="sky-39" firstAttribute="trailing" secondItem="root-view" secondAttribute="trailing" id="sky-39-r"/>
                             <constraint firstItem="sky-39" firstAttribute="bottom" secondItem="root-view" secondAttribute="bottom" id="sky-39-b"/>
-                            <constraint firstItem="star-0" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.08" id="star-0-cx"/>
-                            <constraint firstItem="star-0" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.072" id="star-0-cy"/>
-                            <constraint firstItem="star-1" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.18" id="star-1-cx"/>
-                            <constraint firstItem="star-1" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.158" id="star-1-cy"/>
-                            <constraint firstItem="star-2" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.28" id="star-2-cx"/>
-                            <constraint firstItem="star-2" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.043" id="star-2-cy"/>
-                            <constraint firstItem="star-3" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.4" id="star-3-cx"/>
-                            <constraint firstItem="star-3" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.115" id="star-3-cy"/>
-                            <constraint firstItem="star-4" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.55" id="star-4-cx"/>
-                            <constraint firstItem="star-4" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.065" id="star-4-cy"/>
-                            <constraint firstItem="star-5" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.7" id="star-5-cx"/>
-                            <constraint firstItem="star-5" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.144" id="star-5-cy"/>
-                            <constraint firstItem="star-6" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.82" id="star-6-cx"/>
-                            <constraint firstItem="star-6" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.058" id="star-6-cy"/>
-                            <constraint firstItem="star-7" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.92" id="star-7-cx"/>
-                            <constraint firstItem="star-7" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.216" id="star-7-cy"/>
-                            <constraint firstItem="star-8" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.12" id="star-8-cx"/>
-                            <constraint firstItem="star-8" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.288" id="star-8-cy"/>
-                            <constraint firstItem="star-9" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.36" id="star-9-cx"/>
-                            <constraint firstItem="star-9" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.346" id="star-9-cy"/>
-                            <constraint firstItem="star-10" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.68" id="star-10-cx"/>
-                            <constraint firstItem="star-10" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.302" id="star-10-cy"/>
-                            <constraint firstItem="star-11" firstAttribute="centerX" secondItem="root-view" secondAttribute="trailing" multiplier="0.88" id="star-11-cx"/>
-                            <constraint firstItem="star-11" firstAttribute="centerY" secondItem="root-view" secondAttribute="bottom" multiplier="0.374" id="star-11-cy"/>
-                            <constraint firstItem="xpulse-label" firstAttribute="centerX" secondItem="root-view" secondAttribute="centerX" id="lbl-cx"/>
-                            <constraint firstItem="xpulse-label" firstAttribute="centerY" secondItem="root-view" secondAttribute="centerY" id="lbl-cy"/>
-                            <constraint firstItem="tagline-label" firstAttribute="centerX" secondItem="root-view" secondAttribute="centerX" id="tagline-cx"/>
-                            <constraint firstItem="tagline-label" firstAttribute="top" secondItem="xpulse-label" secondAttribute="bottom" constant="12" id="tagline-t"/>
+                            <constraint firstItem="wordmark-img" firstAttribute="centerX" secondItem="root-view" secondAttribute="centerX" id="wm-cx"/>
+                            <constraint firstItem="wordmark-img" firstAttribute="centerY" secondItem="root-view" secondAttribute="centerY" id="wm-cy"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -428,4 +309,7 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="XpulseWordmark" width="337" height="139"/>
+    </resources>
 </document>

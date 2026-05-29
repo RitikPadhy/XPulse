@@ -109,8 +109,7 @@ class _FriendDetailViewState extends State<_FriendDetailView> {
           trailing: GestureDetector(
             onTap: widget.onBack,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: p.accent, width: 2),
               ),
@@ -118,7 +117,6 @@ class _FriendDetailViewState extends State<_FriendDetailView> {
                 'BACK',
                 style: TextStyle(
                   color: p.accent,
-                  fontFamily: 'Courier',
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.5,
@@ -146,12 +144,10 @@ class _FriendDetailViewState extends State<_FriendDetailView> {
               }
               if (!snap.hasData) {
                 return Center(
-                  child: Text('LOADING…',
-                      style: TextStyle(
-                        color: p.textMuted,
-                        fontFamily: 'Courier',
-                        letterSpacing: 2,
-                      )),
+                  child: Text(
+                    'LOADING…',
+                    style: TextStyle(color: p.textMuted, letterSpacing: 2),
+                  ),
                 );
               }
               final detail = snap.data!;
@@ -162,10 +158,8 @@ class _FriendDetailViewState extends State<_FriendDetailView> {
                   c.friendDetailHeader(friend: detail),
                   c.sectionHeader(label: 'Last 7 days'),
                   ...detail.last7Days.reversed.map(
-                    (e) => c.friendDailyXpRow(
-                      entry: e,
-                      isToday: e.day == today,
-                    ),
+                    (e) =>
+                        c.friendDailyXpRow(entry: e, isToday: e.day == today),
                   ),
                 ],
               );

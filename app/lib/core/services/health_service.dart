@@ -24,8 +24,10 @@ class HealthService {
   /// won't tell us).
   Future<bool> requestPermissions() async {
     await _ready;
-    return _h.requestAuthorization(v1HealthTypes,
-        permissions: v1HealthPermissions);
+    return _h.requestAuthorization(
+      v1HealthTypes,
+      permissions: v1HealthPermissions,
+    );
   }
 
   /// Reads samples between [start] and [end] (exclusive of [end]).

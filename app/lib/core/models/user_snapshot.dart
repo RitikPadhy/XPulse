@@ -22,11 +22,9 @@ class UserSnapshot {
 
     for (final q in quests.pool) {
       if (q.status == QuestStatus.complete) {
-        items.add(XpGain(
-          label: q.title,
-          source: XpSource.quest,
-          xp: q.xpReward,
-        ));
+        items.add(
+          XpGain(label: q.title, source: XpSource.quest, xp: q.xpReward),
+        );
         accounted += q.xpReward;
       }
     }
@@ -34,34 +32,38 @@ class UserSnapshot {
     final crits = today.criticalStrikes;
     if (crits > 0) {
       final bonus = crits * critXp;
-      items.add(XpGain(
-        label: '$crits× Critical Strike',
-        source: XpSource.crit,
-        xp: bonus,
-      ));
+      items.add(
+        XpGain(
+          label: '$crits× Critical Strike',
+          source: XpSource.crit,
+          xp: bonus,
+        ),
+      );
       accounted += bonus;
     }
 
     final remainder = today.xpEarned - accounted;
     if (remainder > 0) {
-      items.add(XpGain(
-        label: 'Daily Activity',
-        source: XpSource.activity,
-        xp: remainder,
-      ));
+      items.add(
+        XpGain(
+          label: 'Daily Activity',
+          source: XpSource.activity,
+          xp: remainder,
+        ),
+      );
     }
     return items;
   }
 
   /// Parses the backend `/v1/me/snapshot` response.
   factory UserSnapshot.fromJson(Map<String, dynamic> json) => UserSnapshot(
-        user: UserProfile.fromMeJson(json['me'] as Map<String, dynamic>),
-        today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
-        quests: QuestBook.fromJson(json['quests'] as Map<String, dynamic>),
-        friends: (json['friends'] as List)
-            .map((e) => Friend.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    user: UserProfile.fromMeJson(json['me'] as Map<String, dynamic>),
+    today: TodayData.fromJson(json['today'] as Map<String, dynamic>),
+    quests: QuestBook.fromJson(json['quests'] as Map<String, dynamic>),
+    friends: (json['friends'] as List)
+        .map((e) => Friend.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class UserProfile {
@@ -140,12 +142,13 @@ class QuestBook {
   }
 
   factory QuestBook.fromJson(Map<String, dynamic> json) => QuestBook(
-        initialActiveIds:
-            (json['activeIds'] as List).map((e) => e as String).toList(),
-        pool: (json['pool'] as List)
-            .map((e) => Quest.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    initialActiveIds: (json['activeIds'] as List)
+        .map((e) => e as String)
+        .toList(),
+    pool: (json['pool'] as List)
+        .map((e) => Quest.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 enum QuestStatus { inProgress, complete }
@@ -173,16 +176,16 @@ class Quest {
       target == 0 ? 0 : (current / target).clamp(0, 1).toDouble();
 
   factory Quest.fromJson(Map<String, dynamic> json) => Quest(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        metric: json['metric'] as String,
-        target: json['target'] as num,
-        current: json['current'] as num,
-        xpReward: json['xpReward'] as int,
-        status: json['status'] == 'complete'
-            ? QuestStatus.complete
-            : QuestStatus.inProgress,
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    metric: json['metric'] as String,
+    target: json['target'] as num,
+    current: json['current'] as num,
+    xpReward: json['xpReward'] as int,
+    status: json['status'] == 'complete'
+        ? QuestStatus.complete
+        : QuestStatus.inProgress,
+  );
 }
 
 /// One row in the friends leaderboard.
@@ -206,14 +209,14 @@ class Friend {
   });
 
   factory Friend.fromJson(Map<String, dynamic> j) => Friend(
-        id: j['id'] as int,
-        displayName: j['display_name'] as String,
-        avatarKey: j['avatar_key'] as String?,
-        country: j['country'] as String?,
-        dailyXp: j['daily_xp'] as int,
-        totalXp: j['total_xp'] as int,
-        rank: j['rank'] as int,
-      );
+    id: j['id'] as int,
+    displayName: j['display_name'] as String,
+    avatarKey: j['avatar_key'] as String?,
+    country: j['country'] as String?,
+    dailyXp: j['daily_xp'] as int,
+    totalXp: j['total_xp'] as int,
+    rank: j['rank'] as int,
+  );
 }
 
 enum XpSource { quest, crit, activity }
@@ -253,19 +256,19 @@ class FriendDetail {
   });
 
   factory FriendDetail.fromJson(Map<String, dynamic> j) => FriendDetail(
-        id: j['id'] as int,
-        displayName: j['display_name'] as String,
-        avatarKey: j['avatar_key'] as String?,
-        country: j['country'] as String?,
-        bio: j['bio'] as String?,
-        joinedAt: (j['joined_at'] as String).split('T').first,
-        dailyXp: j['daily_xp'] as int,
-        totalXp: j['total_xp'] as int,
-        rank: j['rank'] as int?,
-        last7Days: (j['last_7_days'] as List)
-            .map((e) => DailyXp.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] as int,
+    displayName: j['display_name'] as String,
+    avatarKey: j['avatar_key'] as String?,
+    country: j['country'] as String?,
+    bio: j['bio'] as String?,
+    joinedAt: (j['joined_at'] as String).split('T').first,
+    dailyXp: j['daily_xp'] as int,
+    totalXp: j['total_xp'] as int,
+    rank: j['rank'] as int?,
+    last7Days: (j['last_7_days'] as List)
+        .map((e) => DailyXp.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class DailyXp {
@@ -273,8 +276,6 @@ class DailyXp {
   final int xp;
   DailyXp({required this.day, required this.xp});
 
-  factory DailyXp.fromJson(Map<String, dynamic> j) => DailyXp(
-        day: j['day'] as String,
-        xp: j['xp'] as int,
-      );
+  factory DailyXp.fromJson(Map<String, dynamic> j) =>
+      DailyXp(day: j['day'] as String, xp: j['xp'] as int);
 }

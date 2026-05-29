@@ -79,7 +79,9 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
 
   Future<void> _resetSyncState() async {
     await _storage.resetSyncState();
-    setState(() => _status = 'sync state cleared — next sync will refetch last 24h');
+    setState(
+      () => _status = 'sync state cleared — next sync will refetch last 24h',
+    );
     await _refresh();
   }
 
@@ -90,11 +92,13 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
     });
     try {
       final result = await _sync.syncOnce();
-      setState(() => _status = result.ok
-          ? 'fetched ${result.fetched}, '
-              'inserted ${result.inserted}, '
-              'duplicates ${result.duplicates}'
-          : 'fetched ${result.fetched}, queued ${result.queued} (error: ${result.error})');
+      setState(
+        () => _status = result.ok
+            ? 'fetched ${result.fetched}, '
+                  'inserted ${result.inserted}, '
+                  'duplicates ${result.duplicates}'
+            : 'fetched ${result.fetched}, queued ${result.queued} (error: ${result.error})',
+      );
     } catch (e) {
       setState(() => _status = 'error: $e');
     } finally {
@@ -109,7 +113,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Health setup', style: TextStyle(fontFamily: 'Courier', letterSpacing: 2)),
+        title: const Text('Health setup', style: TextStyle(letterSpacing: 2)),
       ),
       body: SafeArea(
         child: Padding(
@@ -117,7 +121,10 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _statusRow('API token', _hasToken == true ? 'configured' : 'missing'),
+              _statusRow(
+                'API token',
+                _hasToken == true ? 'configured' : 'missing',
+              ),
               if (_hasToken != true) ...[
                 const SizedBox(height: 8),
                 TextField(
@@ -129,17 +136,23 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton(onPressed: _saveToken, child: const Text('Save token')),
+                ElevatedButton(
+                  onPressed: _saveToken,
+                  child: const Text('Save token'),
+                ),
               ] else
-                TextButton(onPressed: _clearToken, child: const Text('Clear token')),
+                TextButton(
+                  onPressed: _clearToken,
+                  child: const Text('Clear token'),
+                ),
               const Divider(height: 32),
               _statusRow(
                 'HealthKit',
                 _hasPermissions == true
                     ? 'granted (best-known)'
                     : _hasPermissions == false
-                        ? 'not granted'
-                        : 'unknown (iOS hides this)',
+                    ? 'not granted'
+                    : 'unknown (iOS hides this)',
               ),
               const SizedBox(height: 8),
               ElevatedButton(
@@ -162,7 +175,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                 child: const Text('Reset sync state (refetch last 24h)'),
               ),
               const SizedBox(height: 24),
-              Text(_status, style: const TextStyle(fontFamily: 'Courier')),
+              Text(_status),
             ],
           ),
         ),
@@ -175,15 +188,9 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontFamily: 'Courier', letterSpacing: 2)),
+        Text(label, style: const TextStyle(letterSpacing: 2)),
         const SizedBox(width: 12),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: const TextStyle(fontFamily: 'Courier'),
-          ),
-        ),
+        Flexible(child: Text(value, textAlign: TextAlign.right)),
       ],
     );
   }

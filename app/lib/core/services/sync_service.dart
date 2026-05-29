@@ -30,13 +30,10 @@ class SyncOutcome {
 /// advanced after a successful POST so HealthKit re-queries the same range
 /// on the next attempt (backend's UniqueConstraint absorbs the overlap).
 class SyncService {
-  SyncService({
-    HealthService? health,
-    ApiClient? api,
-    StorageService? storage,
-  })  : _health = health ?? HealthService(),
-        _api = api ?? ApiClient(),
-        _storage = storage ?? StorageService.instance;
+  SyncService({HealthService? health, ApiClient? api, StorageService? storage})
+    : _health = health ?? HealthService(),
+      _api = api ?? ApiClient(),
+      _storage = storage ?? StorageService.instance;
 
   final HealthService _health;
   final ApiClient _api;

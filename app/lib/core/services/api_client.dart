@@ -18,10 +18,10 @@ class IngestResult {
   final int duplicates;
 
   factory IngestResult.fromJson(Map<String, dynamic> j) => IngestResult(
-        received: j['received'] as int,
-        inserted: j['inserted'] as int,
-        duplicates: j['duplicates'] as int,
-      );
+    received: j['received'] as int,
+    inserted: j['inserted'] as int,
+    duplicates: j['duplicates'] as int,
+  );
 }
 
 class ApiException implements Exception {
@@ -56,9 +56,9 @@ class ApiClient {
     String baseUrl = 'http://129.159.228.56:8000',
     StorageService? storage,
     http.Client? httpClient,
-  })  : _baseUrl = baseUrl,
-        _storage = storage ?? StorageService.instance,
-        _http = httpClient ?? http.Client();
+  }) : _baseUrl = baseUrl,
+       _storage = storage ?? StorageService.instance,
+       _http = httpClient ?? http.Client();
 
   final String _baseUrl;
   final StorageService _storage;
@@ -89,7 +89,10 @@ class ApiClient {
     );
     if (r.statusCode == 201 || r.statusCode == 200) {
       final j = jsonDecode(r.body) as Map<String, dynamic>;
-      return AuthResult(token: j['token'] as String, userId: j['user_id'] as int);
+      return AuthResult(
+        token: j['token'] as String,
+        userId: j['user_id'] as int,
+      );
     }
     throw ApiException(r.statusCode, _errorMessage(r.body));
   }
@@ -106,7 +109,10 @@ class ApiClient {
     );
     if (r.statusCode >= 200 && r.statusCode < 300) {
       final j = jsonDecode(r.body) as Map<String, dynamic>;
-      return AuthResult(token: j['token'] as String, userId: j['user_id'] as int);
+      return AuthResult(
+        token: j['token'] as String,
+        userId: j['user_id'] as int,
+      );
     }
     if (r.statusCode == 401) {
       throw UnauthenticatedException('invalid email or password');
@@ -152,11 +158,11 @@ class ApiClient {
       'POST' => _http.post(uri, headers: headers, body: encoded),
       'PATCH' => _http.patch(uri, headers: headers, body: encoded),
       _ => throw ArgumentError('unsupported method: $method'),
-    }
-        .timeout(const Duration(seconds: 15));
+    }.timeout(const Duration(seconds: 15));
 
     if (r.statusCode >= 200 && r.statusCode < 300) return r.body;
-    if (r.statusCode == 401) throw UnauthenticatedException(_errorMessage(r.body));
+    if (r.statusCode == 401)
+      throw UnauthenticatedException(_errorMessage(r.body));
     throw ApiException(r.statusCode, _errorMessage(r.body));
   }
 
@@ -191,7 +197,8 @@ class ApiClient {
 
         if (r.statusCode >= 200 && r.statusCode < 300) {
           return IngestResult.fromJson(
-              jsonDecode(r.body) as Map<String, dynamic>);
+            jsonDecode(r.body) as Map<String, dynamic>,
+          );
         }
 
         // 4xx (other than 5xx) shouldn't be retried — caller's data/auth is wrong.
