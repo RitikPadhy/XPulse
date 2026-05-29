@@ -120,12 +120,13 @@ class ApiClient {
   /// POST /v1/me/quests/sync — push the on-device summaries (7-day baseline
   /// for target generation + today's per-metric totals for progress). No raw
   /// samples are sent or stored; HealthKit is the source of truth.
-  Future<void> syncQuests({
+  /// Returns today's earned XP from the response (for progress notifications).
+  Future<int> syncQuests({
     required Map<String, double> baselines,
     required Map<String, double> totals,
     String? tz,
   }) async {
-    await _authed(
+    final r = await _authed(
       'POST',
       '/v1/me/quests/sync',
       body: {
@@ -134,6 +135,10 @@ class ApiClient {
         if (tz != null) 'tz': tz,
       },
     );
+    final j = jsonDecode(r) as Map<String, dynamic>;
+    final xp = (j['today'] as Map<String, dynamic>?)?['xp']
+        as Map<String, dynamic>?;
+    return (xp?['earned'] as num?)?.toInt() ?? 0;
   }
 
   /// POST /v1/me/quests/{id}/activate — move a quest into the active 4.

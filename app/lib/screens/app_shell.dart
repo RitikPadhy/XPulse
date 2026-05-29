@@ -10,6 +10,7 @@ import '../core/repositories/user_repository.dart';
 import '../core/services/api_client.dart';
 import '../core/services/background_sync.dart';
 import '../core/services/health_service.dart';
+import '../core/services/notification_service.dart';
 import '../core/services/storage_service.dart';
 import '../core/services/sync_service.dart';
 import '../ui/contracts/skin_scope.dart';
@@ -146,6 +147,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   Future<void> _bootstrapHealth() async {
     if (_healthBootstrapped) return;
     _healthBootstrapped = true;
+    unawaited(NotificationService.instance.init()); // request notif permission
     unawaited(BackgroundSync.startObservers());
     await _generateAndRefresh();
   }

@@ -1,5 +1,6 @@
 import 'api_client.dart';
 import 'health_service.dart';
+import 'notification_service.dart';
 
 class SyncOutcome {
   SyncOutcome({this.error});
@@ -43,7 +44,13 @@ class SyncService {
       // Ongoing/observer syncs only push progress (totals). The pool is
       // generated from the 7-day baseline at app launch (AppShell), so we
       // send an empty baseline here.
-      await _api.syncQuests(baselines: const {}, totals: totals);
+      final earned = await _api.syncQuests(baselines: const {}, totals: totals);
+      // Fire a progress nudge if a milestone was crossed (this is the
+      // background-wake path → notifications while the app is in recent apps).
+      await NotificationService.instance.maybeNotifyProgress(
+        earned: earned,
+        goal: 1000, // fixed daily budget
+      );
       return SyncOutcome();
     } catch (e) {
       return SyncOutcome(error: e);
