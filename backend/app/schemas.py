@@ -26,15 +26,19 @@ class AuthResponse(BaseModel):
 
 
 class QuestSyncRequest(BaseModel):
-    """Two on-device summaries, keyed by HealthKit type name. Nothing raw is
-    stored — HealthKit remains the source of truth.
+    """On-device summaries + the device timezone. Nothing raw is stored —
+    HealthKit remains the source of truth, and the *clock* is always the
+    server's (the phone clock is never trusted).
 
     - `baselines`: 7-day median daily total per metric → quest targets.
     - `totals`: today's summed total per metric → progress / proportional XP.
+    - `tz`: the user's IANA timezone (e.g. "Asia/Kolkata") — a location, not a
+      time. Used to convert server-UTC into the user's local midnight/noon.
     """
 
     baselines: dict[str, float] = {}
     totals: dict[str, float] = {}
+    tz: str | None = None
 
 
 class UserDetailsOut(BaseModel):

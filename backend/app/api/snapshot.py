@@ -8,6 +8,7 @@ breakdown fills in as the gamification logic gets wired up.
 
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
@@ -151,6 +152,19 @@ def sync_quests(
         user.details = UserDetail(user_id=user.id)
         db.commit()
         db.refresh(user)
+
+    # Pin the user's timezone (a location) from the device. The current time
+    # always comes from the server clock, so the phone clock can't be gamed;
+    # this only tells us which local midnight/noon to use.
+    if payload.tz:
+        try:
+            ZoneInfo(payload.tz)  # validate
+            if user.details.timezone != payload.tz:
+                user.details.timezone = payload.tz
+                db.commit()
+                db.refresh(user)
+        except Exception:
+            pass  # ignore bad zone names; lock falls back to UTC
 
     pool = get_or_assign_pool(db, user, baselines=payload.baselines)
     earned = refresh_progress(db, user, pool, payload.totals) if pool else 0
