@@ -52,11 +52,21 @@ class AuthResult {
 /// Reads the bearer token from secure storage on every call. POSTs retry up
 /// to 3 total attempts with exponential backoff before throwing.
 class ApiClient {
+  /// Backend base URL — never hardcoded in source. Injected at build/run time:
+  ///   flutter run  --dart-define-from-file=dart_defines.json
+  ///   flutter build ... --dart-define=XPULSE_API_BASE_URL=https://api.example
+  /// Falls back to localhost so a missing define fails fast & obviously in dev
+  /// instead of silently hitting production.
+  static const _envBaseUrl = String.fromEnvironment(
+    'XPULSE_API_BASE_URL',
+    defaultValue: 'http://localhost:8000',
+  );
+
   ApiClient({
-    String baseUrl = 'http://129.159.228.56:8000',
+    String? baseUrl,
     StorageService? storage,
     http.Client? httpClient,
-  }) : _baseUrl = baseUrl,
+  }) : _baseUrl = baseUrl ?? _envBaseUrl,
        _storage = storage ?? StorageService.instance,
        _http = httpClient ?? http.Client();
 
